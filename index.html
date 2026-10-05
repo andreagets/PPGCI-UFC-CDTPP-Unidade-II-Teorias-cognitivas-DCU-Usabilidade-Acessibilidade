@@ -1,0 +1,2103 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Infográfico Interativo — Aula 8: Conteúdos Digitais</title>
+  
+  <!-- Basecoat CSS CDN -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/basecoat-css@1.0.2/dist/basecoat.cdn.min.css">
+  
+  <!-- System Shell CSS -->
+  <style>
+/* Skip artifact shell — fixed styles served beside every artifact.
+   Complements basecoat; artifacts override --accent for their own identity. */
+:root {
+  color-scheme: light dark;
+  --accent: #2563eb;
+  --accent-contrast: #ffffff;
+  --accent-text: color-mix(in srgb, var(--accent) 72%, #000);
+  --bg: #f8f9fb;
+  --surface: #ffffff;
+  --text: #14171f;
+  --text-muted: #5b6472;
+  --border: rgba(20, 23, 31, 0.10);
+  --radius: 10px;
+  --shadow: 0 1px 3px rgba(20, 23, 31, 0.08);
+  --space: 16px;
+}
+/* Theme resolution. Without data-theme the viewer's system preference decides,
+   as it always did. With it, the artifact's own choice wins in BOTH directions:
+   a page that hardcodes one palette must not be handed the opposite set of
+   tokens by the machine it happens to be opened on. The dark values appear
+   twice because a media query cannot be folded into a selector list.
+   The attribute sits inside :where() so these blocks keep the specificity of a
+   bare :root — the page's own <style> is linked after this file and must go on
+   overriding any token it wants, exactly as it could before. */
+@media (prefers-color-scheme: dark) {
+  :root:where(:not([data-theme="light"])) {
+    --accent-text: color-mix(in srgb, var(--accent) 78%, #fff);
+    --bg: #101318;
+    --surface: #181c23;
+    --text: #eef1f6;
+    --text-muted: #9aa4b2;
+    --border: rgba(238, 241, 246, 0.12);
+    --shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+  }
+}
+:root:where([data-theme="dark"]) {
+  color-scheme: dark;
+  --accent-text: color-mix(in srgb, var(--accent) 78%, #fff);
+  --bg: #101318;
+  --surface: #181c23;
+  --text: #eef1f6;
+  --text-muted: #9aa4b2;
+  --border: rgba(238, 241, 246, 0.12);
+  --shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+:root:where([data-theme="light"]) { color-scheme: light; }
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+img { max-width: 100%; display: block; }
+
+.shell-container { max-width: 1100px; margin: 0 auto; padding: 0 20px; }
+.shell-section { padding: calc(var(--space) * 2) 0; }
+.shell-grid { display: grid; gap: var(--space); grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+.shell-toolbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: var(--space); }
+.shell-footer { padding: 24px 0 40px; color: var(--text-muted); font-size: 13px; }
+
+.shell-hero { padding: calc(var(--space) * 3) 0 calc(var(--space) * 2); }
+.shell-hero h1 { font-size: clamp(26px, 4vw, 40px); line-height: 1.15; margin: 0 0 10px; text-wrap: balance; }
+.shell-hero p { color: var(--text-muted); max-width: 60ch; margin: 0; }
+
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: var(--space);
+}
+
+.kpi { display: flex; flex-direction: column; gap: 4px; }
+.kpi .kpi-value { font-size: 28px; font-weight: 650; line-height: 1.1; }
+.kpi .kpi-label { font-size: 13px; color: var(--text-muted); }
+.kpi .kpi-delta { font-size: 12.5px; font-weight: 600; }
+.kpi .kpi-delta.up { color: #0a8f3c; }
+.kpi .kpi-delta.down { color: #cf3131; }
+
+table.shell-table { border-collapse: collapse; width: 100%; font-size: 14px; }
+table.shell-table th {
+  text-align: left; font-size: 11.5px; letter-spacing: 0.05em; text-transform: uppercase;
+  color: var(--text-muted); font-weight: 600;
+}
+table.shell-table th, table.shell-table td { padding: 9px 12px 9px 0; border-bottom: 1px solid var(--border); }
+table.shell-table td.num, table.shell-table th.num { text-align: right; font-variant-numeric: tabular-nums; }
+table.shell-table tbody tr:hover { background: color-mix(in srgb, var(--accent) 6%, transparent); }
+
+.chart-box { width: 100%; min-height: 220px; }
+.chart-box svg { width: 100%; height: auto; display: block; }
+
+.muted { color: var(--text-muted); }
+.accent { color: var(--accent-text); }
+.shell-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 12px; font-weight: 600; padding: 3px 10px; border-radius: 999px;
+  background: color-mix(in srgb, var(--accent) 12%, transparent); color: var(--accent-text);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .shell-fade { animation: shell-fade 400ms ease both; }
+  @keyframes shell-fade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+}
+
+</style>
+  
+  <!-- Google Fonts: Inter -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+  
+  <!-- System Shell JS -->
+  
+
+  <style>
+    :root {
+      --accent: #0369a1;
+      --accent-warm: #b45309;
+      --accent-green: #15803d;
+      --accent-danger: #b91c1c;
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    body {
+      font-family: var(--font-sans);
+      color: var(--text, #1e293b);
+      background-color: var(--bg, #f8fafc);
+      line-height: 1.6;
+      margin: 0;
+      padding: 0;
+    }
+
+    /* Top Sticky Nav */
+    .sticky-nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--border, #e2e8f0);
+      padding: 0.5rem 1rem;
+    }
+    .sticky-nav-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      overflow-x: auto;
+      gap: 0.5rem;
+      scrollbar-width: thin;
+    }
+    .nav-link {
+      font-size: 0.825rem;
+      font-weight: 600;
+      color: var(--text-muted, #475569);
+      text-decoration: none;
+      padding: 0.35rem 0.65rem;
+      border-radius: var(--radius, 6px);
+      white-space: nowrap;
+      transition: all 0.2s ease;
+    }
+    .nav-link:hover, .nav-link:focus-visible {
+      color: var(--accent-text, #0369a1);
+      background: #e0f2fe;
+      outline: 2px solid var(--accent);
+    }
+
+    /* Hero / Identification */
+    .academic-header {
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+      color: #ffffff;
+      padding: 3rem 1.5rem 2.5rem;
+      border-bottom: 4px solid var(--accent);
+    }
+    .academic-header .shell-container {
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+    .academic-badge {
+      display: inline-block;
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      background: rgba(255, 255, 255, 0.15);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      padding: 0.35rem 0.75rem;
+      border-radius: 9999px;
+      margin-bottom: 1rem;
+      color: #e2e8f0;
+    }
+    .hero-title {
+      font-size: clamp(1.8rem, 4vw, 2.75rem);
+      font-weight: 800;
+      line-height: 1.2;
+      margin: 0 0 1rem;
+      color: #ffffff;
+    }
+    .hero-subtitle {
+      font-size: clamp(1rem, 2vw, 1.25rem);
+      color: #cbd5e1;
+      max-width: 900px;
+      line-height: 1.5;
+      margin: 0 0 1.5rem;
+    }
+    .hero-meta {
+      font-size: 0.875rem;
+      color: #94a3b8;
+      border-top: 1px solid rgba(255, 255, 255, 0.15);
+      padding-top: 1rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1.5rem;
+    }
+
+    /* Layout Sections */
+    .section-wrap {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 3rem 1.25rem;
+    }
+    .section-title {
+      font-size: 1.65rem;
+      font-weight: 700;
+      color: #0f172a;
+      margin: 0 0 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .section-desc {
+      font-size: 1rem;
+      color: #475569;
+      margin: 0 0 2rem;
+      max-width: 850px;
+    }
+
+    /* Guiding Question */
+    .guiding-quote {
+      background: #f0fdf4;
+      border-left: 6px solid #16a34a;
+      padding: 1.75rem 2rem;
+      border-radius: 0 var(--radius, 8px) var(--radius, 8px) 0;
+      margin: 2rem 0;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    }
+    .guiding-quote-text {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: #14532d;
+      margin: 0 0 0.5rem;
+      line-height: 1.4;
+    }
+    .guiding-quote-source {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #166534;
+      margin: 0;
+    }
+
+    /* DIKU Cards (Data -> Info -> Knowledge) */
+    .diku-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+      position: relative;
+    }
+    @media (min-width: 768px) {
+      .diku-grid {
+        grid-template-columns: 1fr auto 1fr auto 1fr;
+        align-items: center;
+      }
+    }
+    .diku-card {
+      background: #ffffff;
+      border: 2px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 1.5rem;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+      position: relative;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .diku-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 16px -4px rgba(0,0,0,0.1);
+      border-color: var(--accent);
+    }
+    .diku-tag {
+      display: inline-block;
+      font-size: 0.75rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      padding: 0.2rem 0.6rem;
+      border-radius: 4px;
+      margin-bottom: 0.75rem;
+    }
+    .diku-tag.dado { background: #f1f5f9; color: #334155; }
+    .diku-tag.info { background: #e0f2fe; color: #0369a1; }
+    .diku-tag.conhec { background: #dcfce7; color: #15803d; }
+    .diku-val {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #0f172a;
+      margin-bottom: 0.5rem;
+    }
+    .diku-arrow {
+      text-align: center;
+      font-size: 1.8rem;
+      font-weight: 900;
+      color: #94a3b8;
+    }
+    @media (max-width: 767px) {
+      .diku-arrow {
+        transform: rotate(90deg);
+        margin: -0.5rem 0;
+      }
+    }
+    .interactive-tooltip {
+      position: relative;
+      display: inline-block;
+      margin-top: 0.5rem;
+    }
+    .tooltip-btn {
+      background: none;
+      border: 1px dashed var(--accent);
+      color: var(--accent-text, #0369a1);
+      font-size: 0.8rem;
+      font-weight: 600;
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .tooltip-text {
+      visibility: hidden;
+      width: 250px;
+      background-color: #0f172a;
+      color: #fff;
+      text-align: left;
+      border-radius: 6px;
+      padding: 0.75rem;
+      position: absolute;
+      z-index: 20;
+      bottom: 125%;
+      left: 50%;
+      transform: translateX(-50%);
+      opacity: 0;
+      transition: opacity 0.3s;
+      font-size: 0.8rem;
+      line-height: 1.35;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.25);
+      pointer-events: none;
+    }
+    .tooltip-btn:hover + .tooltip-text,
+    .tooltip-btn:focus + .tooltip-text {
+      visibility: visible;
+      opacity: 1;
+    }
+    .context-callout {
+      background: #fffbeb;
+      border: 1px solid #fde68a;
+      border-left: 5px solid #d97706;
+      border-radius: 8px;
+      padding: 1.25rem;
+      margin-top: 1.5rem;
+      font-size: 0.95rem;
+      color: #78350f;
+    }
+
+    /* Production Flow Stepper */
+    .stepper-nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: 1.5rem;
+    }
+    .step-btn {
+      flex: 1 1 calc(20% - 0.5rem);
+      min-width: 170px;
+      padding: 0.85rem 1rem;
+      background: #ffffff;
+      border: 2px solid #e2e8f0;
+      border-radius: 8px;
+      cursor: pointer;
+      text-align: left;
+      transition: all 0.2s;
+    }
+    .step-btn.active {
+      border-color: var(--accent);
+      background: #f0f9ff;
+      box-shadow: 0 2px 4px rgba(3, 105, 161, 0.15);
+    }
+    .step-num {
+      display: block;
+      font-size: 0.75rem;
+      font-weight: 800;
+      color: #64748b;
+      text-transform: uppercase;
+    }
+    .step-btn.active .step-num {
+      color: var(--accent);
+    }
+    .step-title {
+      display: block;
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #1e293b;
+      margin-top: 0.25rem;
+    }
+    .stepper-display {
+      background: #ffffff;
+      border: 2px solid #bae6fd;
+      border-radius: 12px;
+      padding: 1.75rem;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+    }
+    .feedback-loop-banner {
+      margin-top: 1.25rem;
+      background: #f1f5f9;
+      border: 1px dashed #64748b;
+      border-radius: 8px;
+      padding: 1rem 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-size: 0.9rem;
+      color: #334155;
+    }
+
+    /* Tabs Component */
+    .tab-list {
+      display: flex;
+      gap: 0.5rem;
+      border-bottom: 2px solid #e2e8f0;
+      margin-bottom: 1.5rem;
+      overflow-x: auto;
+    }
+    .tab-trigger {
+      padding: 0.75rem 1.25rem;
+      font-weight: 700;
+      font-size: 0.95rem;
+      color: #64748b;
+      background: none;
+      border: none;
+      border-bottom: 3px solid transparent;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s;
+    }
+    .tab-trigger:hover {
+      color: #0f172a;
+    }
+    .tab-trigger.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+    }
+    .tab-panel {
+      display: none;
+      animation: fadeIn 0.3s ease;
+    }
+    .tab-panel.active {
+      display: block;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Accordion styles */
+    .accordion-item {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      margin-bottom: 0.65rem;
+      overflow: hidden;
+    }
+    .accordion-header {
+      width: 100%;
+      padding: 1rem 1.25rem;
+      text-align: left;
+      background: none;
+      border: none;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 0.95rem;
+      color: #0f172a;
+      transition: background 0.2s;
+    }
+    .accordion-header:hover {
+      background: #f8fafc;
+    }
+    .accordion-header[aria-expanded="true"] {
+      background: #f0f9ff;
+      color: var(--accent);
+    }
+    .accordion-icon {
+      font-size: 1.2rem;
+      transition: transform 0.2s;
+    }
+    .accordion-header[aria-expanded="true"] .accordion-icon {
+      transform: rotate(180deg);
+    }
+    .accordion-content {
+      padding: 1rem 1.25rem;
+      border-top: 1px solid #e2e8f0;
+      background: #ffffff;
+      font-size: 0.925rem;
+      color: #334155;
+      display: none;
+    }
+    .accordion-content.show {
+      display: block;
+    }
+
+    /* Cognitive Load Theory Bars */
+    .clt-container {
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+      margin-bottom: 1.5rem;
+    }
+    .clt-bar {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 1.25rem;
+      border-left: 8px solid #64748b;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+    }
+    .clt-bar.intrinsic { border-left-color: #0284c7; }
+    .clt-bar.extraneous { border-left-color: #ef4444; }
+    .clt-bar.germane { border-left-color: #10b981; }
+
+    .clt-action {
+      font-weight: 800;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      margin-left: 0.5rem;
+    }
+    .clt-bar.intrinsic .clt-action { background: #e0f2fe; color: #0369a1; }
+    .clt-bar.extraneous .clt-action { background: #fee2e2; color: #b91c1c; }
+    .clt-bar.germane .clt-action { background: #d1fae5; color: #047857; }
+
+    .hotspot-box {
+      background: #eff6ff;
+      border: 2px dashed #3b82f6;
+      border-radius: 8px;
+      padding: 1rem 1.25rem;
+      cursor: pointer;
+      margin-top: 1rem;
+      transition: all 0.2s;
+    }
+    .hotspot-box:hover {
+      background: #dbeafe;
+    }
+
+    /* Mayer SOI Model */
+    .mayer-flow {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+    .mayer-node {
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      padding: 1.25rem;
+      text-align: center;
+    }
+    .mayer-node h4 {
+      margin: 0 0 0.5rem;
+      font-size: 1rem;
+      color: #0f172a;
+    }
+
+    /* Gauge & Usability */
+    .gauge-wrapper {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 1.5rem;
+      text-align: center;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+    }
+    .gauge-svg {
+      max-width: 320px;
+      width: 100%;
+      height: auto;
+      margin: 0 auto;
+      display: block;
+    }
+    .gauge-indicator {
+      font-size: 2.2rem;
+      font-weight: 800;
+      color: #0f172a;
+      margin: 0.5rem 0 0;
+    }
+    .gauge-label {
+      font-weight: 600;
+      font-size: 0.95rem;
+      margin-bottom: 1rem;
+    }
+
+    /* Timeline Horizontal */
+    .timeline-container {
+      display: flex;
+      overflow-x: auto;
+      gap: 1rem;
+      padding: 1.5rem 0.5rem;
+      scrollbar-width: thin;
+    }
+    .timeline-item {
+      flex: 0 0 240px;
+      background: #ffffff;
+      border: 2px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 1.25rem;
+      cursor: pointer;
+      position: relative;
+      transition: all 0.2s;
+    }
+    .timeline-item:hover, .timeline-item.active {
+      border-color: var(--accent);
+      transform: translateY(-4px);
+      box-shadow: 0 8px 16px -4px rgba(0,0,0,0.1);
+    }
+    .timeline-item.active {
+      background: #f0f9ff;
+    }
+    .timeline-year {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: var(--accent);
+      margin-bottom: 0.25rem;
+    }
+    .timeline-title {
+      font-weight: 700;
+      font-size: 0.95rem;
+      color: #0f172a;
+      margin-bottom: 0.5rem;
+    }
+
+    /* Interactive Quiz */
+    .quiz-card {
+      background: #ffffff;
+      border: 2px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 2rem;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+    }
+    .quiz-option {
+      display: block;
+      width: 100%;
+      text-align: left;
+      padding: 1rem 1.25rem;
+      margin-bottom: 0.75rem;
+      background: #ffffff;
+      border: 2px solid #cbd5e1;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      font-weight: 500;
+      color: #1e293b;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .quiz-option:hover:not(:disabled) {
+      border-color: var(--accent);
+      background: #f8fafc;
+    }
+    .quiz-option.correct {
+      border-color: #15803d;
+      background: #dcfce7;
+      color: #14532d;
+      font-weight: 700;
+    }
+    .quiz-option.wrong {
+      border-color: #b91c1c;
+      background: #fee2e2;
+      color: #7f1d1d;
+      font-weight: 700;
+    }
+    .quiz-feedback {
+      margin-top: 1.5rem;
+      padding: 1.25rem;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      display: none;
+    }
+
+    /* Sketches / Storyboard */
+    .sketch-figure {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 1rem;
+      margin: 0;
+      text-align: center;
+    }
+    .sketch-img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 6px;
+      border: 1px solid #cbd5e1;
+      display: block;
+      margin: 0 auto 0.75rem;
+      background-color: #f1f5f9;
+      min-height: 200px;
+    }
+    .sketch-caption {
+      font-size: 0.85rem;
+      color: #475569;
+      line-height: 1.4;
+      text-align: left;
+    }
+
+    /* Citation Box */
+    .citation-box {
+      background: #f8fafc;
+      border: 2px solid #cbd5e1;
+      border-radius: 8px;
+      padding: 1.5rem;
+      position: relative;
+    }
+    .copy-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+      background: #0f172a;
+      color: #ffffff;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-top: 0.75rem;
+      transition: background 0.2s;
+    }
+    .copy-btn:hover {
+      background: #334155;
+    }
+    .copy-btn:focus-visible {
+      outline: 2px solid var(--accent);
+    }
+
+    /* Print styles */
+    @media print {
+      .sticky-nav, .quiz-controls, .copy-btn, .hotspot-box, .btn {
+        display: none !important;
+      }
+      body {
+        background: #ffffff !important;
+        color: #000000 !important;
+      }
+      .section-wrap {
+        padding: 1rem 0 !important;
+        page-break-inside: avoid;
+      }
+      .accordion-content {
+        display: block !important;
+      }
+      .tab-panel {
+        display: block !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Sticky Quick Navigation Bar -->
+  <header class="sticky-nav" role="banner">
+    <nav class="sticky-nav-inner" aria-label="Navegação do infográfico">
+      <a href="#pergunta" class="nav-link">Pergunta Orientadora</a>
+      <a href="#dado-info" class="nav-link">Dado e Conhecimento</a>
+      <a href="#fluxo" class="nav-link">Fluxo de Produção</a>
+      <a href="#paradigmas-dcu" class="nav-link">Paradigmas & DCU</a>
+      <a href="#carga-cognitiva" class="nav-link">Carga Cognitiva</a>
+      <a href="#multimidia" class="nav-link">Aprendizagem Multimídia</a>
+      <a href="#usabilidade" class="nav-link">Usabilidade & SUS</a>
+      <a href="#acessibilidade" class="nav-link">Acessibilidade</a>
+      <a href="#linha-do-tempo" class="nav-link">Linha do Tempo</a>
+      <a href="#quiz" class="nav-link">Quiz</a>
+      <a href="#esbocos" class="nav-link">Esboços</a>
+      <a href="#referencias" class="nav-link">Referências</a>
+    </nav>
+  </header>
+
+  <!-- Hero & Academic Header -->
+  <section class="academic-header">
+    <div class="shell-container">
+      <span class="academic-badge">Material Didático Interativo • Unidade II</span>
+      <h1 class="hero-title">Da necessidade do usuário ao conteúdo digital eficaz</h1>
+      <p class="hero-subtitle">Teorias cognitivas, Design Centrado no Usuário, Usabilidade e Acessibilidade na produção de conteúdos digitais</p>
+      <div class="hero-meta">
+        <span><strong>Disciplina:</strong> Conteúdos Digitais e suas Práticas de Produção e Preservação</span>
+        <span><strong>Docente:</strong> Profa. Dra. Andréa Soares Rocha da Silva</span>
+        <span><strong>Programa:</strong> PPGCI / UFC (2026)</span>
+      </div>
+    </div>
+  </section>
+
+  <main id="main-content">
+    
+    <!-- 1. Pergunta Orientadora -->
+    <section id="pergunta" class="section-wrap">
+      <div class="guiding-quote" role="region" aria-label="Pergunta orientadora central">
+        <div style="text-transform: uppercase; font-size: 0.75rem; font-weight: 800; letter-spacing: 0.05em; color: #166534; margin-bottom: 0.35rem;">Princípio Fundamental do Conteúdo Digital</div>
+        <p class="guiding-quote-text">“Quem precisa de quê, em qual situação e para fazer o quê?”</p>
+        <p class="guiding-quote-source">— Baseado em Martínez-Silveira & Oddone (2007) e Pereira (2002)</p>
+      </div>
+      <p style="color: #475569; font-size: 1.05rem;">
+        A produção de qualquer artefato digital relevante não se inicia pela tecnologia, pelo layout ou pela ferramenta de publicação, mas pela precisa caracterização da <strong>lacuna informacional</strong> e da <strong>situação de ação</strong> vivida pela pessoa usuária.
+      </p>
+    </section>
+
+    <!-- 2. Dado, Informação e Conhecimento em Uso -->
+    <section id="dado-info" class="section-wrap" style="background: #ffffff; border-top: 1px solid #e2e8f0; border-bottom: 1px solid #e2e8f0;">
+      <h2 class="section-title">Dado, informação e conhecimento em uso</h2>
+      <p class="section-desc">Entenda a transformação progressiva do registro bruto em capacidade resolutiva de ação situada no cotidiano humano.</p>
+
+      <div class="diku-grid" role="region" aria-label="Diagrama Dado, Informação e Conhecimento">
+        <!-- Dado -->
+        <article class="diku-card">
+          <span class="diku-tag dado">1. Dado</span>
+          <div class="diku-val">“38”</div>
+          <p style="font-size: 0.875rem; color: #475569; margin: 0 0 0.5rem;">Registro quantitativo sem contextualização semântica ou situacional suficiente.</p>
+          <div class="interactive-tooltip">
+            <button type="button" class="tooltip-btn" aria-describedby="tip-dado">Saiba mais</button>
+            <div id="tip-dado" class="tooltip-text" role="tooltip">Símbolo ou valor isolado. Pode significar número de sapato, código postal, idade ou temperatura.</div>
+          </div>
+        </article>
+
+        <div class="diku-arrow" aria-hidden="true">→</div>
+
+        <!-- Informação -->
+        <article class="diku-card">
+          <span class="diku-tag info">2. Informação</span>
+          <div class="diku-val">“38 °C corporal”</div>
+          <p style="font-size: 0.875rem; color: #475569; margin: 0 0 0.5rem;">Dado interpretado e situado para responder a uma indagação diagnóstica pontual.</p>
+          <div class="interactive-tooltip">
+            <button type="button" class="tooltip-btn" aria-describedby="tip-info">Saiba mais</button>
+            <div id="tip-info" class="tooltip-text" role="tooltip">Dado dotado de relevância e propósito. Indica um quadro febril detectado em um organismo.</div>
+          </div>
+        </article>
+
+        <div class="diku-arrow" aria-hidden="true">→</div>
+
+        <!-- Conhecimento em uso -->
+        <article class="diku-card">
+          <span class="diku-tag conhec">3. Conhecimento em Uso</span>
+          <div class="diku-val">“Tomar conduta”</div>
+          <p style="font-size: 0.875rem; color: #475569; margin: 0 0 0.5rem;">Reconhecer efeito colateral pós-vacinal e discernir quando buscar atendimento de urgência.</p>
+          <div class="interactive-tooltip">
+            <button type="button" class="tooltip-btn" aria-describedby="tip-conhec">Saiba mais</button>
+            <div id="tip-conhec" class="tooltip-text" role="tooltip">Apropriação cognitiva que viabiliza tomada de decisão consciente em um contexto real.</div>
+          </div>
+        </article>
+      </div>
+
+      <aside class="context-callout" role="note">
+        <strong>Exemplo didático GAME-GAMI:</strong> O significado exato da informação e a ação resultante nunca residem apenas no transmissor; eles dependem intrinsecamente do repertório, dos objetivos e do contexto vivido pela pessoa usuária no momento do consumo.
+      </aside>
+    </section>
+
+    <!-- 3. Fluxo de Produção de um Conteúdo Digital -->
+    <section id="fluxo" class="section-wrap">
+      <h2 class="section-title">Fluxo de produção de um conteúdo digital</h2>
+      <p class="section-desc">Clique nas etapas sequenciais para visualizar como transformar requisitos cognitivos em interfaces funcionais sustentadas por ciclos de feedback contínuos.</p>
+
+      <div class="stepper-nav" role="tablist" aria-label="Etapas do fluxo de produção">
+        <button type="button" role="tab" class="step-btn active" id="step-btn-1" aria-selected="true" aria-controls="step-panel-1" onclick="selectStep(1)">
+          <span class="step-num">Etapa 01</span>
+          <span class="step-title">Situação e Necessidade</span>
+        </button>
+        <button type="button" role="tab" class="step-btn" id="step-btn-2" aria-selected="false" aria-controls="step-panel-2" onclick="selectStep(2)">
+          <span class="step-num">Etapa 02</span>
+          <span class="step-title">Dados e Fontes</span>
+        </button>
+        <button type="button" role="tab" class="step-btn" id="step-btn-3" aria-selected="false" aria-controls="step-panel-3" onclick="selectStep(3)">
+          <span class="step-num">Etapa 03</span>
+          <span class="step-title">Seleção e Organização</span>
+        </button>
+        <button type="button" role="tab" class="step-btn" id="step-btn-4" aria-selected="false" aria-controls="step-panel-4" onclick="selectStep(4)">
+          <span class="step-num">Etapa 04</span>
+          <span class="step-title">Conteúdo e Interface</span>
+        </button>
+        <button type="button" role="tab" class="step-btn" id="step-btn-5" aria-selected="false" aria-controls="step-panel-5" onclick="selectStep(5)">
+          <span class="step-num">Etapa 05</span>
+          <span class="step-title">Compreensão e Uso</span>
+        </button>
+      </div>
+
+      <div class="stepper-display" id="stepper-content-box">
+        <div id="step-panel-1" role="tabpanel" aria-labelledby="step-btn-1">
+          <h3 style="margin-top: 0; color: #0284c7;">1. Situação e Necessidade</h3>
+          <p>Investigação etnográfica e analítica do ecossistema informacional do público-alvo: identificação das lacunas de conhecimento (anomalous state of knowledge), motivações reais, restrições contextuais de tempo e equipamentos disponíveis.</p>
+        </div>
+        <div id="step-panel-2" role="tabpanel" aria-labelledby="step-btn-2" style="display:none;">
+          <h3 style="margin-top: 0; color: #0284c7;">2. Coleta de Dados e Fontes Fidedignas</h3>
+          <p>Mapeamento de evidências científicas, dados brutos estruturados e documentação primária qualificada. Estabelece a matéria-prima conceitual rigorosa necessária para construir o conteúdo.</p>
+        </div>
+        <div id="step-panel-3" role="tabpanel" aria-labelledby="step-btn-3" style="display:none;">
+          <h3 style="margin-top: 0; color: #0284c7;">3. Seleção, Arquitetura e Organização</h3>
+          <p>Filtragem informacional, poda de ruídos e definição da hierarquia semântica. Aplicação de modelos mentais dos usuários para categorizar conceitos, taxonomia e fluxo lógico de leitura.</p>
+        </div>
+        <div id="step-panel-4" role="tabpanel" aria-labelledby="step-btn-4" style="display:none;">
+          <h3 style="margin-top: 0; color: #0284c7;">4. Design de Conteúdo, Prototipação e Interface</h3>
+          <p>Redação clara (Plain Language), layout visual contíguo, contraste, responsividade e affordances claras. Materialização em protótipos de baixa e alta fidelidade.</p>
+        </div>
+        <div id="step-panel-5" role="tabpanel" aria-labelledby="step-btn-5" style="display:none;">
+          <h3 style="margin-top: 0; color: #0284c7;">5. Compreensão, Avaliação e Uso Efetivo</h3>
+          <p>Medição empírica do impacto informacional: o usuário conseguiu ler, interpretar, lembrar e executar a ação desejada com autonomia e satisfação?</p>
+        </div>
+      </div>
+
+      <div class="feedback-loop-banner" role="complementary">
+        <span style="font-size: 1.5rem;" aria-hidden="true">↺</span>
+        <span><strong>Retorno do usuário:</strong> dúvidas persistentes, erros de interpretação e decisões reais informam continuamente a revisão e o aprimoramento do conteúdo digital.</span>
+      </div>
+    </section>
+
+    <!-- 4. Paradigmas, Técnicas e DCU (Abas) -->
+    <section id="paradigmas-dcu" class="section-wrap" style="background: #ffffff; border-top: 1px solid #e2e8f0; border-bottom: 1px solid #e2e8f0;">
+      <h2 class="section-title">Fundamentos: Paradigmas, Coleta e Ciclo DCU</h2>
+      <p class="section-desc">Alterne entre as abas para aprofundar nas correntes teóricas da Ciência da Informação, nas abordagens metodológicas de investigação e no ciclo de vida do Design Centrado no Usuário.</p>
+
+      <div class="tab-list" role="tablist">
+        <button class="tab-trigger active" role="tab" id="tab-paradigmas-btn" aria-selected="true" aria-controls="panel-paradigmas" onclick="switchTab('paradigmas')">
+          1. Paradigmas de Usuários
+        </button>
+        <button class="tab-trigger" role="tab" id="tab-tecnicas-btn" aria-selected="false" aria-controls="panel-tecnicas" onclick="switchTab('tecnicas')">
+          2. Técnicas de Coleta (7 métodos)
+        </button>
+        <button class="tab-trigger" role="tab" id="tab-dcu-btn" aria-selected="false" aria-controls="panel-dcu" onclick="switchTab('dcu')">
+          3. Ciclo e Princípios do DCU
+        </button>
+      </div>
+
+      <!-- Tab 1: Paradigmas -->
+      <div id="panel-paradigmas" class="tab-panel active" role="tabpanel" aria-labelledby="tab-paradigmas-btn">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem;">
+          <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 1.25rem;">
+            <span class="shell-badge" style="background: #cbd5e1; color: #1e293b; margin-bottom: 0.5rem;">Paradigma Físico</span>
+            <h3 style="margin: 0.25rem 0 0.5rem; font-size: 1.15rem; color: #0f172a;">Abordagem Tradicional</h3>
+            <p style="font-size: 0.9rem; color: #475569;">Foco prioritário em sistemas, acervos documentais e fluxos operacionais pré-estabelecidos. Assume o usuário como receptor estático.</p>
+            <div style="font-size: 0.85rem; border-top: 1px solid #e2e8f0; padding-top: 0.5rem; margin-top: 0.5rem; color: #334155;">
+              <strong>Métodos típicos:</strong> Levantamentos quantitativos, questionários padronizados estruturados, métricas de frequência e estatísticas brutas de circulação.
+            </div>
+          </div>
+
+          <div style="background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px; padding: 1.25rem;">
+            <span class="shell-badge" style="background: #38bdf8; color: #0c4a6e; margin-bottom: 0.5rem;">Paradigma Cognitivo</span>
+            <h3 style="margin: 0.25rem 0 0.5rem; font-size: 1.15rem; color: #0284c7;">Abordagem Alternativa</h3>
+            <p style="font-size: 0.9rem; color: #475569;">Centralidade nas necessidades subjetivas e nos estados mentais internos. Compreende a busca informacional como tentativa de preencher lacunas conceituais.</p>
+            <div style="font-size: 0.85rem; border-top: 1px solid #bae6fd; padding-top: 0.5rem; margin-top: 0.5rem; color: #0369a1;">
+              <strong>Modelos centrais:</strong> Sense-Making (Brenda Dervin), Information Search Process - ISP (Carol Kuhlthau) e entrevistas em profundidade qualitativas.
+            </div>
+          </div>
+
+          <div style="background: #fdf2f8; border: 1px solid #fbcfe8; border-radius: 8px; padding: 1.25rem;">
+            <span class="shell-badge" style="background: #f472b6; color: #831843; margin-bottom: 0.5rem;">Paradigma Social</span>
+            <h3 style="margin: 0.25rem 0 0.5rem; font-size: 1.15rem; color: #9d174d;">Abordagem Sociocultural</h3>
+            <p style="font-size: 0.9rem; color: #475569;">Práticas informacionais situadas em contextos históricos, sociais, culturais e políticos coletivos. A informação é construída intersubjetivamente na prática.</p>
+            <div style="font-size: 0.85rem; border-top: 1px solid #fbcfe8; padding-top: 0.5rem; margin-top: 0.5rem; color: #831843;">
+              <strong>Métodos centrais:</strong> Etnografia, etnometodologia situada, análise do discurso, observação participante e triangulações metodológicas densas.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab 2: Técnicas de Coleta (Accordion) -->
+      <div id="panel-tecnicas" class="tab-panel" role="tabpanel" aria-labelledby="tab-tecnicas-btn">
+        <div class="accordion-group">
+          <div class="accordion-item">
+            <button class="accordion-header" onclick="toggleAcc(this)" aria-expanded="false">
+              <span>1. Questionários (Surveys)</span>
+              <span class="accordion-icon" aria-hidden="true">▾</span>
+            </button>
+            <div class="accordion-content">
+              Alcance amplo e distribuído geograficamente. Excelente para mensurar dados sociodemográficos, preferências declaradas e percepções padronizadas através de questões fechadas e abertas estruturadas.
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <button class="accordion-header" onclick="toggleAcc(this)" aria-expanded="false">
+              <span>2. Entrevistas (Estruturadas, Semiestruturadas e Abertas)</span>
+              <span class="accordion-icon" aria-hidden="true">▾</span>
+            </button>
+            <div class="accordion-content">
+              Investigação em profundidade das motivações, barreiras cognitivas e modelos conceituais das pessoas. Permite esclarecer ambiguidades e explorar nuances situacionais não previstas pelo pesquisador.
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <button class="accordion-header" onclick="toggleAcc(this)" aria-expanded="false">
+              <span>3. Grupos Focais</span>
+              <span class="accordion-icon" aria-hidden="true">▾</span>
+            </button>
+            <div class="accordion-content">
+              Dinâmica coletiva mediada que fomenta o debate e a revelação de consensos, divergências e expectativas compartilhadas sobre produtos, serviços ou linguagens de conteúdo digital.
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <button class="accordion-header" onclick="toggleAcc(this)" aria-expanded="false">
+              <span>4. Observação Natural ou Sistemática</span>
+              <span class="accordion-icon" aria-hidden="true">▾</span>
+            </button>
+            <div class="accordion-content">
+              Monitoramento in loco do comportamento prático. Permite captar rotinas, interrupções ambientais e hábitos tácitos que os próprios usuários omitiriam ou esqueceriam de relatar em questionários.
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <button class="accordion-header" onclick="toggleAcc(this)" aria-expanded="false">
+              <span>5. Diários de Uso (Diary Studies)</span>
+              <span class="accordion-icon" aria-hidden="true">▾</span>
+            </button>
+            <div class="accordion-content">
+              Auto-registros periódicos preenchidos pelo participante ao longo de dias ou semanas. Crucial para compreender comportamentos longitudinais, picos de necessidade e evolução do aprendizado com o sistema.
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <button class="accordion-header" onclick="toggleAcc(this)" aria-expanded="false">
+              <span>6. Testes de Usabilidade Moderados ou Não Moderados</span>
+              <span class="accordion-icon" aria-hidden="true">▾</span>
+            </button>
+            <div class="accordion-content">
+              Execução de tarefas representativas com o conteúdo digital. Coleta de evidências empíricas de erros cometidos, taxa de conclusão, tempo despendido e verbalização do pensamento (protocolo Think Aloud).
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <button class="accordion-header" onclick="toggleAcc(this)" aria-expanded="false">
+              <span>7. Análise de Logs e Telemetria</span>
+              <span class="accordion-icon" aria-hidden="true">▾</span>
+            </button>
+            <div class="accordion-content">
+              Extração objetiva de registros computacionais de navegação: termos pesquisados sem retorno (zero search results), taxas de rejeição por página, trajetos de navegação e pontos de abandono em funis.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab 3: Ciclo DCU -->
+      <div id="panel-dcu" class="tab-panel" role="tabpanel" aria-labelledby="tab-dcu-btn">
+        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 1.5rem; margin-bottom: 1.5rem;">
+          <h3 style="margin-top: 0; color: #0f172a;">O Ciclo Iterativo do DCU (ISO 9241-210)</h3>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 1rem;">
+            <div style="background: #ffffff; padding: 1rem; border-radius: 6px; border: 1px solid #cbd5e1;">
+              <strong style="color: #0284c7;">1. Compreender</strong>
+              <p style="font-size: 0.85rem; margin: 0.35rem 0 0;">Identificar contexto, perfil dos usuários reais e tarefas pretendidas.</p>
+            </div>
+            <div style="background: #ffffff; padding: 1rem; border-radius: 6px; border: 1px solid #cbd5e1;">
+              <strong style="color: #0284c7;">2. Especificar</strong>
+              <p style="font-size: 0.85rem; margin: 0.35rem 0 0;">Delimitar requisitos informacionais, metas cognitivas e restrições técnicas.</p>
+            </div>
+            <div style="background: #ffffff; padding: 1rem; border-radius: 6px; border: 1px solid #cbd5e1;">
+              <strong style="color: #0284c7;">3. Projetar</strong>
+              <p style="font-size: 0.85rem; margin: 0.35rem 0 0;">Elaborar arquitetura de informação, conteúdo textual e protótipos de interface.</p>
+            </div>
+            <div style="background: #ffffff; padding: 1rem; border-radius: 6px; border: 1px solid #cbd5e1;">
+              <strong style="color: #0284c7;">4. Avaliar</strong>
+              <p style="font-size: 0.85rem; margin: 0.35rem 0 0;">Testar com usuários reais para identificar barreiras e retroalimentar nova versão.</p>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <h4 style="margin: 0 0 0.75rem; color: #0f172a;">Quatro Princípios Essenciais:</h4>
+          <ol style="padding-left: 1.25rem; font-size: 0.95rem; color: #334155; margin: 0; line-height: 1.7;">
+            <li><strong>Compreensão explícita do usuário, suas tarefas e seu ambiente de operação.</strong></li>
+            <li><strong>Participação ativa das pessoas usuárias</strong> ao longo de todo o processo de concepção e desenvolvimento.</li>
+            <li><strong>Projeto orientado e aperfeiçoado por avaliação centrada no uso real.</strong></li>
+            <li><strong>Desenvolvimento iterativo:</strong> ciclos sucessivos de refinamento antes da consolidação final.</li>
+          </ol>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. Teoria da Carga Cognitiva (Sweller) -->
+    <section id="carga-cognitiva" class="section-wrap">
+      <h2 class="section-title">Teoria da Carga Cognitiva (John Sweller)</h2>
+      <p class="section-desc">A memória de trabalho humana possui capacidade restrita para processar novas informações simultâneas. O design de conteúdo deve modular conscientemente os três tipos de carga.</p>
+
+      <div class="clt-container" role="region" aria-label="Tipos de Carga Cognitiva">
+        <!-- Carga Intrínseca -->
+        <article class="clt-bar intrinsic">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+            <h3 style="margin: 0; font-size: 1.1rem; color: #0f172a;">1. Carga Cognitiva Intrínseca</h3>
+            <span class="clt-action">Estratégia: Gerenciar</span>
+          </div>
+          <p style="margin: 0; font-size: 0.925rem; color: #334155;">
+            Inerente à complexidade conceitual do assunto em relação à bagagem prévia do leitor. <em>Não pode ser eliminada</em>, mas deve ser <strong>gerenciada</strong> por meio de sequenciação didática e segmentação em etapas gradativas.
+          </p>
+        </article>
+
+        <!-- Carga Estranha -->
+        <article class="clt-bar extraneous">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+            <h3 style="margin: 0; font-size: 1.1rem; color: #0f172a;">2. Carga Cognitiva Estranha (Extraneous)</h3>
+            <span class="clt-action">Estratégia: Minimizar</span>
+          </div>
+          <p style="margin: 0; font-size: 0.925rem; color: #334155;">
+            Esforço mental improdutivo gerado por má diagramação, textos redundantes, ícones enigmáticos, navegação confusa ou elementos puramente decorativos. <strong>Deve ser eliminada ou minimizada rigorosamente.</strong>
+          </p>
+        </article>
+
+        <!-- Carga Relevante -->
+        <article class="clt-bar germane">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+            <h3 style="margin: 0; font-size: 1.1rem; color: #0f172a;">3. Carga Cognitiva Relevante (Germane)</h3>
+            <span class="clt-action">Estratégia: Promover</span>
+          </div>
+          <p style="margin: 0; font-size: 0.925rem; color: #334155;">
+            Esforço cognitivo dedicado à criação e consolidação de esquemas mentais duradouros na memória de longo prazo. O designer de conteúdo deve <strong>promover</strong> essa carga através de analogias e exercícios ativos.
+          </p>
+        </article>
+      </div>
+
+      <div class="hotspot-box" onclick="toggleHotspotModal()" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' ') toggleHotspotModal()" aria-expanded="false" id="hotspot-btn">
+        <div style="display: flex; align-items: center; gap: 0.75rem;">
+          <span style="font-size: 1.5rem;" aria-hidden="true">💡</span>
+          <div>
+            <strong style="color: #1e3a8a;">Hotspot Teórico: Ponte entre Sobrecarga Informacional e Usabilidade</strong>
+            <div style="font-size: 0.875rem; color: #1e40af; margin-top: 0.2rem;">Clique para visualizar as implicações diretas da Teoria da Carga Cognitiva na Arquitetura da Informação (Sigolo & Casarin, 2024).</div>
+          </div>
+        </div>
+        <div id="hotspot-content" style="display: none; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #bfdbfe; font-size: 0.9rem; color: #1e293b; line-height: 1.6;">
+          A explosão de volumes documentais (information overload) gera fadiga cognitiva e paralisia decisória. Na Ciência da Informação e na Usabilidade, aplicar a TCC significa construir <strong>rotulagens familiares</strong>, <strong>chunking</strong> (agrupamento em blocos digeríveis de informação) e <strong>divulgação progressiva</strong> (progressive disclosure). Assim, preservamos a memória de trabalho para o que é pedagogicamente substantivo.
+        </div>
+      </div>
+    </section>
+
+    <!-- 6. Teoria Cognitiva da Aprendizagem Multimídia (Mayer) -->
+    <section id="multimidia" class="section-wrap" style="background: #ffffff; border-top: 1px solid #e2e8f0; border-bottom: 1px solid #e2e8f0;">
+      <h2 class="section-title">Teoria Cognitiva da Aprendizagem Multimídia (Richard Mayer)</h2>
+      <p class="section-desc">Pessoas aprendem mais profundamente a partir de palavras associadas a imagens do que apenas a partir de palavras isoladas, desde que respeitada a ecologia cognitiva do cérebro.</p>
+
+      <!-- Modelo SOI e Canais Duplos -->
+      <div style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 12px; padding: 1.5rem; margin-bottom: 2rem;">
+        <h3 style="margin-top: 0; font-size: 1.15rem; color: #0f172a; text-align: center; margin-bottom: 1.25rem;">
+          Arquitetura de Processamento de Canais Duplos (Modelo SOI)
+        </h3>
+        
+        <div class="mayer-flow" role="region" aria-label="Diagrama do Modelo SOI">
+          <div class="mayer-node">
+            <span class="shell-badge" style="background: #e2e8f0; color: #1e293b; margin-bottom: 0.5rem;">Entrada Sensorial</span>
+            <h4>Canais Duplos</h4>
+            <p style="font-size: 0.85rem; color: #475569; margin: 0;"><strong>Canal Verbal:</strong> texto lido ou fala narrada.<br><strong>Canal Visual:</strong> esquemas gráficos, fotos e diagramas.</p>
+          </div>
+
+          <div class="mayer-node" style="border-color: #38bdf8; background: #f0f9ff;">
+            <span class="shell-badge" style="background: #0284c7; color: #fff; margin-bottom: 0.5rem;">Memória de Trabalho</span>
+            <h4>Selecionar & Organizar</h4>
+            <p style="font-size: 0.85rem; color: #0369a1; margin: 0;">Filtragem atencional de palavras/imagens relevantes e construção interna de um modelo conceitual coerente.</p>
+          </div>
+
+          <div class="mayer-node" style="border-color: #34d399; background: #f0fdf4;">
+            <span class="shell-badge" style="background: #15803d; color: #fff; margin-bottom: 0.5rem;">Memória Longo Prazo</span>
+            <h4>Integrar</h4>
+            <p style="font-size: 0.85rem; color: #166534; margin: 0;">Conexão ativa do novo modelo organizado com o repositório de conhecimentos prévios do aprendiz.</p>
+          </div>
+        </div>
+
+        <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 1rem; font-size: 0.85rem; color: #475569; border-top: 1px solid #e2e8f0; padding-top: 0.75rem;">
+          <span><strong>Três Premissas Centrais:</strong></span>
+          <span>1. Canais Duplos auditivo/visual</span>
+          <span>•</span>
+          <span>2. Capacidade de Processamento Limitada</span>
+          <span>•</span>
+          <span>3. Processamento Cognitivo Ativo</span>
+        </div>
+      </div>
+
+      <!-- Princípios de Mayer Accordion -->
+      <h3 style="font-size: 1.2rem; color: #0f172a; margin-bottom: 1rem;">Princípios Aplicados ao Conteúdo Digital (Mayer & Moreno)</h3>
+
+      <div class="accordion-group">
+        <!-- Grupo 1 -->
+        <div class="accordion-item">
+          <button class="accordion-header" onclick="toggleAcc(this)" aria-expanded="false">
+            <span>Grupo 1: Reduzir Distrações e Carga Inútil</span>
+            <span class="accordion-icon" aria-hidden="true">▾</span>
+          </button>
+          <div class="accordion-content">
+            <ul style="margin: 0; padding-left: 1.25rem; line-height: 1.6;">
+              <li><strong>Coerência:</strong> Exclua palavras, ilustrações, sons e músicas de fundo que não ensinem diretamente o objetivo pedagógico pretendido.</li>
+              <li><strong>Sinalização:</strong> Adicione destaques visuais (setas, cores contrastantes, negrito) direcionando a atenção para a relação exata que a explicação descreve.</li>
+              <li><strong>Redundância:</strong> Evite exibir simultaneamente texto idêntico escrito e narração oral por cima de animações; prefira narração com termos-chave pontuais.</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Grupo 2 -->
+        <div class="accordion-item">
+          <button class="accordion-header" onclick="toggleAcc(this)" aria-expanded="false">
+            <span>Grupo 2: Proximidade Espacial e Temporal</span>
+            <span class="accordion-icon" aria-hidden="true">▾</span>
+          </button>
+          <div class="accordion-content">
+            <ul style="margin: 0; padding-left: 1.25rem; line-height: 1.6;">
+              <li><strong>Contiguidade Espacial:</strong> Posicione cada rótulo explicativo imediatamente ao lado da parte gráfica que ele nomeia (evita dividir a atenção entre legenda e figura).</li>
+              <li><strong>Contiguidade Temporal:</strong> Apresente a locução explicativa simultaneamente ao instante em que o evento correspondente aparece na animação.</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Grupo 3 -->
+        <div class="accordion-item">
+          <button class="accordion-header" onclick="toggleAcc(this)" aria-expanded="false">
+            <span>Grupo 3: Administrar a Complexidade</span>
+            <span class="accordion-icon" aria-hidden="true">▾</span>
+          </button>
+          <div class="accordion-content">
+            <ul style="margin: 0; padding-left: 1.25rem; line-height: 1.6;">
+              <li><strong>Pré-treinamento:</strong> Apresente previamente o nome, as características e os comportamentos dos componentes principais antes de exibir um processo complexo.</li>
+              <li><strong>Segmentação:</strong> Divida lições densas em unidades curtas controladas pelo próprio ritmo do aprendiz (botões "Continuar").</li>
+              <li><strong>Modalidade:</strong> Em interfaces gráficas dinâmicas, combine a animação visual com áudio falado ao invés de sobrecarregar a visão com blocos extensos de texto lido.</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Grupo 4 -->
+        <div class="accordion-item">
+          <button class="accordion-header" onclick="toggleAcc(this)" aria-expanded="false">
+            <span>Grupo 4: Construir Significado e Conexão Humana</span>
+            <span class="accordion-icon" aria-hidden="true">▾</span>
+          </button>
+          <div class="accordion-content">
+            <ul style="margin: 0; padding-left: 1.25rem; line-height: 1.6;">
+              <li><strong>Multimídia:</strong> Associe a explanação verbal a esquemas visuais significativos em vez de utilizar somente o código textual verbal.</li>
+              <li><strong>Personalização:</strong> Adote estilo conversacional de primeira/segunda pessoa ("observe como funciona") em vez de formulações impessoais estéreis.</li>
+              <li><strong>Voz e Presença:</strong> Utilize entonação humana expressiva; a inclusão do rosto do instrutor em vídeo é benéfica quando sua expressividade reforça a orientação didática.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 7. Usabilidade (Dimensões, Heurísticas e SUS) -->
+    <section id="usabilidade" class="section-wrap">
+      <h2 class="section-title">Usabilidade de Conteúdos Digitais</h2>
+      <p class="section-desc">Definição ISO 9241-11: a extensão na qual um conteúdo digital pode ser utilizado por <strong>pessoas específicas</strong>, para alcançar <strong>objetivos específicos</strong>, com eficácia, eficiência e satisfação, em um <strong>contexto de uso específico</strong>.</p>
+
+      <!-- 3 Dimensões -->
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.25rem; margin-bottom: 2.5rem;">
+        <div style="background: #ffffff; border: 2px solid #e2e8f0; border-radius: 8px; padding: 1.25rem;">
+          <strong style="color: #0284c7; font-size: 1.1rem; display: block; margin-bottom: 0.35rem;">Eficácia</strong>
+          <p style="margin: 0; font-size: 0.9rem; color: #475569;">A pessoa usuária consegue concluir a tarefa informacional de forma precisa e sem equívocos conceituais?</p>
+        </div>
+        <div style="background: #ffffff; border: 2px solid #e2e8f0; border-radius: 8px; padding: 1.25rem;">
+          <strong style="color: #0284c7; font-size: 1.1rem; display: block; margin-bottom: 0.35rem;">Eficiência</strong>
+          <p style="margin: 0; font-size: 0.9rem; color: #475569;">Quanto tempo, energia mental e cliques a pessoa precisa dispensar para encontrar e processar a resposta?</p>
+        </div>
+        <div style="background: #ffffff; border: 2px solid #e2e8f0; border-radius: 8px; padding: 1.25rem;">
+          <strong style="color: #0284c7; font-size: 1.1rem; display: block; margin-bottom: 0.35rem;">Satisfação</strong>
+          <p style="margin: 0; font-size: 0.9rem; color: #475569;">Como a pessoa usuária avalia qualitativamente a experiência global de navegação e assimilação do conteúdo?</p>
+        </div>
+      </div>
+
+      <!-- Abordagens lado a lado: Nielsen vs SUS -->
+      <div style="display: grid; grid-template-columns: 1fr; gap: 2rem; align-items: start;">
+        
+        <!-- Heurísticas de Nielsen -->
+        <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 1.75rem;">
+          <span class="shell-badge" style="background: #e0f2fe; color: #0369a1; margin-bottom: 0.5rem;">Inspeção por Especialistas</span>
+          <h3 style="margin: 0.25rem 0 0.5rem; font-size: 1.25rem; color: #0f172a;">10 Heurísticas de Usabilidade (Nielsen, 1994)</h3>
+          <p style="font-size: 0.875rem; color: #475569; margin-bottom: 1rem;">Critérios norteadores para auditoria ergonômica sem necessariamente envolver testes empíricos diretos com usuários.</p>
+
+          <div class="accordion-group">
+            <div class="accordion-item">
+              <button class="accordion-header" onclick="toggleAcc(this)" aria-expanded="false">
+                <span>Visualizar as 10 Heurísticas</span>
+                <span class="accordion-icon" aria-hidden="true">▾</span>
+              </button>
+              <div class="accordion-content">
+                <ol style="margin: 0; padding-left: 1.2rem; line-height: 1.6; font-size: 0.875rem;">
+                  <li><strong>Visibilidade do status do sistema:</strong> feedback pontual sobre o andamento de carregamentos e processos.</li>
+                  <li><strong>Correspondência com o mundo real:</strong> terminologia familiar ao leitor, não jargões internos de programação.</li>
+                  <li><strong>Controle e liberdade do usuário:</strong> saídas de emergência evidentes (botão desfazer, refazer, fechar).</li>
+                  <li><strong>Consistência e padrões:</strong> mesmos elementos e palavras devem ter os mesmos significados em todo o portal.</li>
+                  <li><strong>Prevenção de erros:</strong> desenho cuidadoso para impedir falhas de envio antes que elas ocorram.</li>
+                  <li><strong>Reconhecimento em vez de memorização:</strong> elementos visíveis que dispensam memorizar dados entre telas.</li>
+                  <li><strong>Flexibilidade e eficiência:</strong> atalhos para navegadores experientes sem prejudicar iniciantes.</li>
+                  <li><strong>Estética e design minimalista:</strong> não incluir diálogos que contenham dados irrelevantes.</li>
+                  <li><strong>Ajudar a reconhecer e recuperar erros:</strong> mensagens em texto claro sugerindo a correção construtiva.</li>
+                  <li><strong>Ajuda e documentação:</strong> orientações fáceis de pesquisar e concentradas na tarefa em andamento.</li>
+                </ol>
+              </div>
+            </div>
+          </div>
+
+          <div style="margin-top: 1rem; padding: 0.75rem 1rem; background: #f8fafc; border-radius: 6px; font-size: 0.8rem; color: #475569; border-left: 3px solid #64748b;">
+            <strong>Escala de Severidade de Nielsen (0 a 4):</strong><br>
+            0 = Não é problema | 1 = Problema cosmético | 2 = Problema menor | 3 = Problema maior (alta prioridade) | 4 = Catástrofe de usabilidade (imperativo corrigir).
+          </div>
+        </div>
+
+        <!-- Escala SUS & Gauge Interativo -->
+        <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 1.75rem;">
+          <span class="shell-badge" style="background: #dcfce7; color: #166534; margin-bottom: 0.5rem;">Métrica Padronizada de Avaliação</span>
+          <h3 style="margin: 0.25rem 0 0.5rem; font-size: 1.25rem; color: #0f172a;">Escala SUS — System Usability Scale (Brooke, 1986)</h3>
+          <p style="font-size: 0.875rem; color: #475569; margin-bottom: 1rem;">Questionário padronizado com 10 afirmações respondidas em escala Likert de 1 (discordo totalmente) a 5 (concordo totalmente).</p>
+
+          <div class="accordion-group" style="margin-bottom: 1.5rem;">
+            <div class="accordion-item">
+              <button class="accordion-header" onclick="toggleAcc(this)" aria-expanded="false">
+                <span>Visualizar as 10 Afirmações do SUS</span>
+                <span class="accordion-icon" aria-hidden="true">▾</span>
+              </button>
+              <div class="accordion-content">
+                <ol style="margin: 0; padding-left: 1.2rem; line-height: 1.6; font-size: 0.85rem;">
+                  <li>Eu acho que gostaria de usar esse sistema com frequência.</li>
+                  <li>Eu achei o sistema desnecessariamente complexo.</li>
+                  <li>Eu achei o sistema fácil de usar.</li>
+                  <li>Eu acho que precisaria da ajuda de uma pessoa com conhecimentos técnicos para usar o sistema.</li>
+                  <li>Eu achei que as várias funções do sistema estavam bem integradas.</li>
+                  <li>Eu achei que havia muita inconsistência no sistema.</li>
+                  <li>Eu imagino que a maioria das pessoas aprenderia a usar esse sistema rapidamente.</li>
+                  <li>Eu achei o sistema muito complicado de usar.</li>
+                  <li>Eu me senti muito confiante usando o sistema.</li>
+                  <li>Eu precisei aprender muitas coisas novas antes de conseguir utilizar o sistema.</li>
+                </ol>
+              </div>
+            </div>
+          </div>
+
+          <!-- Gauge SUS Interativo -->
+          <div class="gauge-wrapper" role="region" aria-label="Simulador e Visualizador do Escore SUS">
+            <h4 style="margin: 0 0 0.25rem; font-size: 1rem; color: #0f172a;">Simulador do Escore SUS (0 a 100)</h4>
+            <p style="font-size: 0.8rem; color: #64748b; margin-bottom: 1rem;">Mova o seletor para explorar o significado dos escores padronizados.</p>
+
+            <svg class="gauge-svg" viewBox="0 0 200 115" aria-hidden="true">
+              <!-- Background Arc Tracks -->
+              <!-- Red: 0 to 50 -->
+              <path d="M 20 100 A 80 80 0 0 1 100 20" fill="none" stroke="#ef4444" stroke-width="16" stroke-dasharray="125.6" stroke-dashoffset="62.8" opacity="0.3"/>
+              <!-- Yellow: 50 to 68 -->
+              <path d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="#f59e0b" stroke-width="16" stroke-dasharray="251.2" stroke-dashoffset="125.6" opacity="0.3"/>
+              <!-- Green: 68 to 100 -->
+              <path d="M 100 20 A 80 80 0 0 1 180 100" fill="none" stroke="#10b981" stroke-width="16" opacity="0.3"/>
+              
+              <!-- 68 Mark Benchmark (avg 68) -->
+              <line x1="126" y1="26" x2="135" y2="17" stroke="#0f172a" stroke-width="2.5" />
+              <text x="138" y="15" font-size="8" font-weight="bold" fill="#0f172a">68 (Média)</text>
+
+              <!-- Needle / Pointer -->
+              <g id="gauge-needle" style="transform-origin: 100px 100px; transform: rotate(0deg); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);">
+                <line x1="100" y1="100" x2="100" y2="30" stroke="#0f172a" stroke-width="3.5" stroke-linecap="round"/>
+                <circle cx="100" cy="100" r="7" fill="#0f172a"/>
+              </g>
+            </svg>
+
+            <div class="gauge-indicator" id="gauge-val-display">68</div>
+            <div class="gauge-label" id="gauge-desc-display" style="color: #b45309;">Referência Média Global (Aceitável)</div>
+
+            <label for="sus-range-input" style="display:block; font-size: 0.8rem; font-weight: 600; color: #475569; margin-bottom: 0.5rem;">
+              Ajuste o valor do Escore SUS:
+            </label>
+            <input type="range" id="sus-range-input" min="0" max="100" value="68" style="width: 80%; max-width: 300px;" oninput="updateGauge(this.value)">
+
+            <div style="font-size: 0.775rem; color: #64748b; margin-top: 1rem; line-height: 1.4;">
+              <em>Nota didática:</em> O escore SUS <strong>não é porcentagem</strong>. É uma pontuação percentílica padronizada calculada segundo a fórmula de Brooke. Abaixo de 50 exige redesign urgente; 68 é a média aceitável global.
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- 8. Acessibilidade Digital -->
+    <section id="acessibilidade" class="section-wrap" style="background: #ffffff; border-top: 1px solid #e2e8f0; border-bottom: 1px solid #e2e8f0;">
+      <h2 class="section-title">Acessibilidade Digital: Publicar não é disponibilizar</h2>
+      <p class="section-desc">Garantir que os conteúdos digitais possam ser percebidos, operados e compreendidos por qualquer pessoa, com ou sem deficiência, em conformidade com as diretrizes internacionais W3C/WCAG 2.2.</p>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+        <!-- Perceber -->
+        <article style="background: #f8fafc; border: 1px solid #cbd5e1; border-top: 4px solid #0284c7; border-radius: 8px; padding: 1.5rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1.15rem; color: #0f172a;">1. Perceptível</h3>
+          <p style="font-size: 0.9rem; color: #475569; margin: 0 0 0.75rem;">A informação e os componentes não podem ser invisíveis a todos os sentidos da pessoa.</p>
+          <ul style="padding-left: 1.2rem; font-size: 0.85rem; color: #334155; margin: 0;">
+            <li>Textos alternativos em imagens informativas.</li>
+            <li>Legendas e audiodescrição em conteúdos audiovisuais.</li>
+            <li>Contraste cromático mínimo de 4.5:1 para texto padrão.</li>
+          </ul>
+        </article>
+
+        <!-- Operar -->
+        <article style="background: #f8fafc; border: 1px solid #cbd5e1; border-top: 4px solid #16a34a; border-radius: 8px; padding: 1.5rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1.15rem; color: #0f172a;">2. Operável</h3>
+          <p style="font-size: 0.9rem; color: #475569; margin: 0 0 0.75rem;">A pessoa usuária precisa conseguir navegar e interagir com toda a interface.</p>
+          <ul style="padding-left: 1.2rem; font-size: 0.85rem; color: #334155; margin: 0;">
+            <li>Navegação 100% acessível via teclado.</li>
+            <li>Indicador visual de foco nítido e visível.</li>
+            <li>Tempo suficiente para leitura e execução de ações.</li>
+          </ul>
+        </article>
+
+        <!-- Compreender -->
+        <article style="background: #f8fafc; border: 1px solid #cbd5e1; border-top: 4px solid #d97706; border-radius: 8px; padding: 1.5rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1.15rem; color: #0f172a;">3. Compreensível</h3>
+          <p style="font-size: 0.9rem; color: #475569; margin: 0 0 0.75rem;">A linguagem textual e o funcionamento dos elementos devem ser previsíveis.</p>
+          <ul style="padding-left: 1.2rem; font-size: 0.85rem; color: #334155; margin: 0;">
+            <li>Títulos informativos e linguagem clara (Plain Language).</li>
+            <li>Instruções consistentes em formulários.</li>
+            <li>Prevenção e identificação de erros de preenchimento.</li>
+          </ul>
+        </article>
+
+        <!-- Robustez -->
+        <article style="background: #f8fafc; border: 1px solid #cbd5e1; border-top: 4px solid #8b5cf6; border-radius: 8px; padding: 1.5rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1.15rem; color: #0f172a;">4. Robusto</h3>
+          <p style="font-size: 0.9rem; color: #475569; margin: 0 0 0.75rem;">O conteúdo precisa ser compatível com diferentes navegadores e tecnologias assistivas.</p>
+          <ul style="padding-left: 1.2rem; font-size: 0.85rem; color: #334155; margin: 0;">
+            <li>Código HTML semântico válido (landmarks, roles).</li>
+            <li>Atributos ARIA adequados quando necessário.</li>
+            <li>Interoperabilidade com leitores de tela modernos.</li>
+          </ul>
+        </article>
+      </div>
+
+      <div style="background: #fee2e2; border-left: 5px solid #dc2626; border-radius: 6px; padding: 1rem 1.25rem; font-size: 0.925rem; color: #7f1d1d;">
+        <strong>Atenção primordial de design:</strong> A cor nunca deve ser o único canal para comunicar significado, indicar status de erro ou exigir ação. Combine sempre cores contrastadas com ícones, textos e padrões texturais.
+      </div>
+    </section>
+
+    <!-- 9. Linha do Tempo Interativa -->
+    <section id="linha-do-tempo" class="section-wrap">
+      <h2 class="section-title">Marcos Históricos da Usabilidade e Cognição</h2>
+      <p class="section-desc">Percorra a linha do tempo cronológica dos conceitos fundamentais que estruturam as práticas contemporâneas de design de conteúdos digitais.</p>
+
+      <div class="timeline-container" role="region" aria-label="Linha do tempo cronológica">
+        <div class="timeline-item active" onclick="selectTimeline(0)" tabindex="0" onkeydown="if(event.key==='Enter') selectTimeline(0)">
+          <div class="timeline-year">1986</div>
+          <div class="timeline-title">John Brooke (SUS)</div>
+          <p style="font-size: 0.8rem; color: #475569; margin: 0;">Criação da System Usability Scale, padrão ouro "rápido e robusto" para mensurar usabilidade percebida.</p>
+        </div>
+
+        <div class="timeline-item" onclick="selectTimeline(1)" tabindex="0" onkeydown="if(event.key==='Enter') selectTimeline(1)">
+          <div class="timeline-year">1988</div>
+          <div class="timeline-title">John Sweller (TCC)</div>
+          <p style="font-size: 0.8rem; color: #475569; margin: 0;">Publicação fundamental da Teoria da Carga Cognitiva no periódico Cognitive Science.</p>
+        </div>
+
+        <div class="timeline-item" onclick="selectTimeline(2)" tabindex="0" onkeydown="if(event.key==='Enter') selectTimeline(2)">
+          <div class="timeline-year">1994</div>
+          <div class="timeline-title">Jakob Nielsen</div>
+          <p style="font-size: 0.8rem; color: #475569; margin: 0;">Consolidação e publicação das 10 Heurísticas de Usabilidade para avaliação por inspeção.</p>
+        </div>
+
+        <div class="timeline-item" onclick="selectTimeline(3)" tabindex="0" onkeydown="if(event.key==='Enter') selectTimeline(3)">
+          <div class="timeline-year">2001</div>
+          <div class="timeline-title">Richard Mayer (TCAM)</div>
+          <p style="font-size: 0.8rem; color: #475569; margin: 0;">Lançamento da obra clássica "Multimedia Learning", fundamentando os princípios cognitivos audiovisuais.</p>
+        </div>
+
+        <div class="timeline-item" onclick="selectTimeline(4)" tabindex="0" onkeydown="if(event.key==='Enter') selectTimeline(4)">
+          <div class="timeline-year">2023</div>
+          <div class="timeline-title">W3C / WCAG 2.2</div>
+          <p style="font-size: 0.8rem; color: #475569; margin: 0;">Atualização das Diretrizes de Acessibilidade para Conteúdo Web, aprimorando requisitos de foco e toques em telas móveis.</p>
+        </div>
+      </div>
+
+      <div id="timeline-detail-box" style="background: #ffffff; border: 2px solid #e2e8f0; border-radius: 10px; padding: 1.5rem; margin-top: 1rem;">
+        <h4 id="timeline-detail-title" style="margin-top: 0; color: #0284c7; font-size: 1.15rem;">1986 — John Brooke: System Usability Scale</h4>
+        <p id="timeline-detail-desc" style="margin: 0; font-size: 0.95rem; color: #334155;">
+          Desenvolvida originalmente na Digital Equipment Corporation como uma ferramenta rápida (quick and dirty) de avaliação de sistemas operacionais e softwares. Hoje com milhares de citações, continua insuperável em eficiência e validação psicométrica de satisfação e facilidade percebida.
+        </p>
+      </div>
+    </section>
+
+    <!-- 10. Quiz Interativo -->
+    <section id="quiz" class="section-wrap" style="background: #ffffff; border-top: 1px solid #e2e8f0; border-bottom: 1px solid #e2e8f0;">
+      <h2 class="section-title">Quiz de Autoavaliação e Fixação</h2>
+      <p class="section-desc">Teste sua assimilação dos conceitos estudados nesta aula em 4 questões reflexivas de múltipla escolha com devolutiva imediata.</p>
+
+      <div class="quiz-card" id="quiz-container">
+        <div id="quiz-question-box">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+            <span id="quiz-counter" style="font-size: 0.85rem; font-weight: 700; color: #0284c7; text-transform: uppercase;">Questão 1 de 4</span>
+            <span id="quiz-score" style="font-size: 0.85rem; font-weight: 600; color: #64748b;">Pontuação: 0</span>
+          </div>
+
+          <h3 id="quiz-question-text" style="font-size: 1.2rem; color: #0f172a; margin-top: 0; margin-bottom: 1.25rem;">
+            O que o usuário digita na barra do buscador é sempre exatamente o que ele precisa?
+          </h3>
+
+          <div id="quiz-options-box">
+            <!-- Dynamic Buttons via JS -->
+          </div>
+
+          <div id="quiz-feedback-box" class="quiz-feedback" role="alert">
+            <!-- Dynamic feedback -->
+          </div>
+
+          <div style="margin-top: 1.5rem; display: flex; justify-content: flex-end;">
+            <button type="button" id="quiz-next-btn" class="btn btn-primary" style="display: none;" onclick="nextQuestion()">
+              Próxima Questão →
+            </button>
+          </div>
+        </div>
+
+        <div id="quiz-final-box" style="display: none; text-align: center; padding: 2rem 1rem;">
+          <h3 style="font-size: 1.75rem; color: #0f172a; margin-top: 0;">Parabéns! Quiz Concluído</h3>
+          <p id="quiz-final-msg" style="font-size: 1.1rem; color: #475569; max-width: 600px; margin: 0 auto 1.5rem;"></p>
+          <button type="button" class="btn btn-primary" onclick="restartQuiz()">Refazer Quiz</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 11. Síntese de Fechamento -->
+    <section class="section-wrap">
+      <div style="background: linear-gradient(135deg, #0c4a6e 0%, #0369a1 100%); color: #ffffff; border-radius: 16px; padding: 2.5rem 2rem; box-shadow: 0 10px 25px -5px rgba(3, 105, 161, 0.25);">
+        <span style="text-transform: uppercase; font-size: 0.75rem; font-weight: 800; letter-spacing: 0.1em; color: #bae6fd; display: block; margin-bottom: 0.5rem;">Síntese Metodológica</span>
+        <h2 style="font-size: 1.85rem; font-weight: 800; margin: 0 0 1rem; color: #ffffff;">Insistir no envolvimento certo dos usuários</h2>
+        <p style="font-size: 1.05rem; line-height: 1.6; color: #e0f2fe; margin-bottom: 1.5rem; max-width: 900px;">
+          Envolva usuários reais desde a fase embrionária de planejamento. Substitutos ou representantes (proxies) devem ser adotados apenas mediante sólida justificativa metodológica, explicitação de critérios de seleção e registro formal como limitação da pesquisa. Conteúdo digital eficaz nasce da observação empírica de pessoas de carne e osso em suas rotinas autênticas.
+        </p>
+        <div style="border-top: 1px solid rgba(255,255,255,0.25); padding-top: 1.25rem;">
+          <strong style="color: #ffffff; font-size: 1.15rem; display: block; margin-bottom: 0.35rem;">Pergunta provocadora para a sua prática:</strong>
+          <span style="font-style: italic; color: #bae6fd; font-size: 1.05rem;">
+            “O que mudaria na concepção, na linguagem e no formato do seu conteúdo se você começasse perguntando: quem é o meu usuário real e o que ele precisa realizar em sua vida prática?”
+          </span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 12. Esboços e Processo de Criação (Costa, 2015) -->
+    <section id="esbocos" class="section-wrap" style="background: #ffffff; border-top: 1px solid #e2e8f0; border-bottom: 1px solid #e2e8f0;">
+      <h2 class="section-title">Esboços e Processo de Criação do Infográfico</h2>
+      <p class="section-desc">A arquitetura visual e a estruturação didática deste infográfico seguiram rigorosamente o método de ensino de construção de infográficos proposto por Costa (2015), composto por cinco etapas sistemáticas: <strong>1. Definição</strong>, <strong>2. Pesquisa de dados</strong>, <strong>3. Seleção de dados</strong>, <strong>4. Estudos de layout (aplicação do SQVID e regra 6x6)</strong> e <strong>5. Implementação</strong>.</p>
+
+      <div style="display: grid; grid-template-columns: 1fr; gap: 2rem; margin-top: 1.5rem;">
+        
+        <!-- Esboço 1 -->
+        <figure class="sketch-figure">
+          <img 
+            src="https://generated-images.adapta.one/andreasrs07%40gmail.com/01a10cde-fb48-717f-a1a3-5bca0951d412/2026-10-05T16-30-02-394Z_Original_user_intent_Hand_drawn_wireframe_storybo.png" 
+            alt="Esboço desenhado à mão mostrando o estudo de layout da página completa, com cabeçalho, pergunta orientadora, sequência linear de dado, informação e conhecimento, e blocos conceituais distribuídos verticalmente."
+            class="sketch-img"
+            loading="lazy"
+            onerror="this.onerror=null; this.parentElement.innerHTML='<div style=\'padding:2rem; background:#f1f5f9; border:2px dashed #94a3b8; border-radius:8px;\'><strong>[Esboço 1 — Visualização Indisponível]</strong><p style=\'font-size:0.85rem; color:#475569;\'>Esboço do layout completo da página (wireframe em papel). Representa a estruturação vertical das 13 seções didáticas da Aula 8, seguindo os princípios de hierarquia visual e navegação contínua descritos por Costa (2015).</p></div>'"
+          >
+          <figcaption class="sketch-caption">
+            <strong>Esboço 1 — Estudo de layout da página completa (wireframe em papel):</strong> Aplicação da regra 6x6 e exploração do SQVID para definir a hierarquia entre o bloco orientador superior, a progressão lógica dos cards de dados e a ordenação modular dos conceitos teóricos.
+          </figcaption>
+        </figure>
+
+        <!-- Esboço 2 -->
+        <figure class="sketch-figure">
+          <img 
+            src="https://generated-images.adapta.one/andreasrs07%40gmail.com/01a10cde-fb48-717f-a1a3-5bca0951d412/2026-10-05T16-30-22-354Z_Original_user_intent_Hand_drawn_wireframe_storybo.png" 
+            alt="Esboço desenhado à mão detalhando os quatro componentes interativos: janelas de tooltips, sanfonas expansíveis de conteúdo, mostrador em semicírculo do índice SUS e estrutura do quiz de autoavaliação."
+            class="sketch-img"
+            loading="lazy"
+            onerror="this.onerror=null; this.parentElement.innerHTML='<div style=\'padding:2rem; background:#f1f5f9; border:2px dashed #94a3b8; border-radius:8px;\'><strong>[Esboço 2 — Visualização Indisponível]</strong><p style=\'font-size:0.85rem; color:#475569;\'>Esboço dos componentes interativos detalhados (tooltips explicativos, accordions, mostrador visual da Escala SUS e fluxo de feedback do quiz interativo).</p></div>'"
+          >
+          <figcaption class="sketch-caption">
+            <strong>Esboço 2 — Componentes interativos:</strong> Prototipação em papel das microinterações funcionais (tooltips de termos técnicos, accordions de aprofundamento, gauge semicircular da escala SUS e sistema de feedback imediato do quiz).
+          </figcaption>
+        </figure>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- 13. Rodapé com Créditos, Como Citar e Fontes -->
+  <footer id="referencias" style="background: #0f172a; color: #cbd5e1; padding: 3.5rem 1.25rem 2.5rem; border-top: 4px solid var(--accent);">
+    <div style="max-width: 1100px; margin: 0 auto;">
+      
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2.5rem; margin-bottom: 2.5rem;">
+        
+        <!-- Bloco A: Créditos Institucionais -->
+        <div>
+          <h3 style="color: #ffffff; font-size: 1.15rem; margin-top: 0; margin-bottom: 1rem; border-bottom: 2px solid #334155; padding-bottom: 0.5rem;">
+            Créditos do Conteúdo
+          </h3>
+          <p style="font-size: 0.9rem; margin-bottom: 0.5rem; line-height: 1.6;">
+            <strong>Autoria:</strong> Profa. Dra. Andréa Soares Rocha da Silva<br>
+            <strong>Disciplina:</strong> Conteúdos Digitais e suas Técnicas de Produção e Preservação<br>
+            <strong>Programa:</strong> Programa de Pós-Graduação em Ciência da Informação (PPGCI)<br>
+            <strong>Instituição:</strong> Universidade Federal do Ceará (UFC)<br>
+            <strong>Ano de Produção:</strong> 2026
+          </p>
+          <div style="margin-top: 1rem; font-size: 0.8rem; color: #94a3b8; background: #1e293b; padding: 0.75rem; border-radius: 6px;">
+            <strong>Direitos de Uso:</strong> Todos os direitos reservados. Proibida a reprodução total ou parcial sem autorização prévia da autora.
+          </div>
+        </div>
+
+        <!-- Bloco B: Como Citar (ABNT NBR 10520:2023) -->
+        <div>
+          <h3 style="color: #ffffff; font-size: 1.15rem; margin-top: 0; margin-bottom: 1rem; border-bottom: 2px solid #334155; padding-bottom: 0.5rem;">
+            Como Citar este Material
+          </h3>
+          <div class="citation-box" style="background: #1e293b; border-color: #334155;">
+            <p id="citation-text" style="font-size: 0.85rem; color: #e2e8f0; margin: 0; line-height: 1.5; font-family: monospace;">
+              SILVA, Andréa Soares Rocha da. Da necessidade do usuário ao conteúdo digital eficaz: infográfico interativo da Aula 8. Fortaleza: UFC/PPGCI, 2026. Material didático interativo da disciplina Conteúdos Digitais e suas Técnicas de Produção e Preservação.
+            </p>
+            <div style="margin-top: 0.5rem; font-size: 0.8rem; color: #94a3b8;">
+              Citação no texto: <strong>(Silva, 2026)</strong>
+            </div>
+            <button type="button" class="copy-btn" onclick="copyCitation()">
+              <span id="copy-icon">📋</span>
+              <span id="copy-label">Copiar citação ABNT</span>
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Bloco C: Fontes Principais (ABNT NBR 6023) -->
+      <div style="border-top: 1px solid #334155; padding-top: 2rem;">
+        <h3 style="color: #ffffff; font-size: 1.15rem; margin-top: 0; margin-bottom: 1.25rem;">
+          Fontes e Referências Bibliográficas (NBR 6023)
+        </h3>
+        <ul style="font-size: 0.825rem; color: #94a3b8; line-height: 1.7; padding-left: 1.2rem; margin: 0;">
+          <li>BROOKE, J. SUS: a "quick and dirty" usability scale. In: JORDAN, P. W. et al. (org.). <em>Usability evaluation in industry</em>. London: Taylor & Francis, 1996. p. 189-194.</li>
+          <li>COSTA, C. C. da. Um método de ensino de construção de infográficos baseado no visual thinking e no design thinking. In: <em>CONGRESSO INTERNACIONAL DE DESIGN DA INFORMAÇÃO (CIDI)</em>, 7., 2015, Brasília. Anais [...]. São Paulo: Blucher, 2015.</li>
+          <li>MARTÍNEZ-SILVEIRA, M.; ODDONE, N. Necessidades e comportamento informacional: conceituação e modelos. <em>Ciência da Informação</em>, Brasília, v. 36, n. 2, p. 118-127, maio/ago. 2007.</li>
+          <li>MAYER, R. E. The past, present, and future of the cognitive theory of multimedia learning. <em>Educational Psychology Review</em>, v. 36, n. 8, 2024.</li>
+          <li>MAYER, R. E.; MORENO, R. Nine ways to reduce cognitive load in multimedia learning. <em>Educational Psychologist</em>, v. 38, n. 1, p. 43-52, 2003.</li>
+          <li>NIELSEN, J. <em>Usability engineering</em>. San Francisco: Morgan Kaufmann, 1994.</li>
+          <li>PEREIRA, E. C. Design de sistemas de informação centrado no usuário e a abordagem do sense-making. <em>Transinformação</em>, Campinas, v. 14, n. 2, p. 139-151, jul./dez. 2002.</li>
+          <li>SIGOLO, B. O. O.; CASARIN, H. C. S. Contribuições da teoria da carga cognitiva para compreensão da sobrecarga informacional: uma revisão de literatura. <em>RDBCI: Revista Digital de Biblioteconomia e Ciência da Informação</em>, Campinas, v. 22, e024027, 2024.</li>
+          <li>SILVA, Andréa Soares Rocha da. <em>Aplicação de princípios e aspectos metodológicos de estudos de usuários, design centrado no usuário, usabilidade e acessibilidade na produção de conteúdos digitais</em>. Fortaleza: UFC/PPGCI, 2026. Material de aula.</li>
+          <li>SWELLER, J. Cognitive load during problem solving: effects on learning. <em>Cognitive Science</em>, v. 12, n. 2, p. 257-285, 1988.</li>
+          <li>W3C. <em>Diretrizes de Acessibilidade para Conteúdo Web (WCAG) 2.2</em>. W3C Recommendation, 2023.</li>
+          <li>WILSON, T. D. Models in information behaviour research. <em>Journal of Documentation</em>, v. 55, n. 3, p. 249-270, 1999.</li>
+        </ul>
+      </div>
+
+      <div style="text-align: center; margin-top: 2.5rem; font-size: 0.775rem; color: #64748b;">
+        PPGCI / UFC • Material didático para estudo autônomo • Projetado com foco em usabilidade e acessibilidade digital
+      </div>
+
+    </div>
+  </footer>
+
+  <!-- Script Logic -->
+  <script>
+    // 1. Production Flow Stepper logic
+    function selectStep(stepNum) {
+      for (let i = 1; i <= 5; i++) {
+        const btn = document.getElementById(`step-btn-${i}`);
+        const panel = document.getElementById(`step-panel-${i}`);
+        if (i === stepNum) {
+          btn.classList.add('active');
+          btn.setAttribute('aria-selected', 'true');
+          panel.style.display = 'block';
+        } else {
+          btn.classList.remove('active');
+          btn.setAttribute('aria-selected', 'false');
+          panel.style.display = 'none';
+        }
+      }
+    }
+
+    // 2. Tabs Switcher
+    function switchTab(tabKey) {
+      const tabs = ['paradigmas', 'tecnicas', 'dcu'];
+      tabs.forEach(t => {
+        const btn = document.getElementById(`tab-${t}-btn`);
+        const panel = document.getElementById(`panel-${t}`);
+        if (t === tabKey) {
+          btn.classList.add('active');
+          btn.setAttribute('aria-selected', 'true');
+          panel.classList.add('active');
+        } else {
+          btn.classList.remove('active');
+          btn.setAttribute('aria-selected', 'false');
+          panel.classList.remove('active');
+        }
+      });
+    }
+
+    // 3. Accessible Accordions
+    function toggleAcc(btn) {
+      const isExpanded = btn.getAttribute('aria-expanded') === 'true';
+      const content = btn.nextElementSibling;
+      btn.setAttribute('aria-expanded', !isExpanded);
+      if (isExpanded) {
+        content.classList.remove('show');
+      } else {
+        content.classList.add('show');
+      }
+    }
+
+    // 4. Hotspot Toggle
+    function toggleHotspotModal() {
+      const box = document.getElementById('hotspot-content');
+      const btn = document.getElementById('hotspot-btn');
+      const isHidden = box.style.display === 'none' || box.style.display === '';
+      box.style.display = isHidden ? 'block' : 'none';
+      btn.setAttribute('aria-expanded', isHidden ? 'true' : 'false');
+    }
+
+    // 5. SUS Gauge Dynamic Calculator
+    function updateGauge(val) {
+      const value = parseInt(val, 10);
+      document.getElementById('gauge-val-display').textContent = value;
+      
+      // Calculate angle: 0 corresponds to -90deg, 100 corresponds to +90deg
+      const angle = (value / 100) * 180 - 90;
+      document.getElementById('gauge-needle').style.transform = `rotate(${angle}deg)`;
+
+      const descEl = document.getElementById('gauge-desc-display');
+      if (value < 50) {
+        descEl.textContent = 'Priorizar investimentos urgente (Inaceitável)';
+        descEl.style.color = '#dc2626';
+      } else if (value < 68) {
+        descEl.textContent = 'Problemas sérios de usabilidade (Marginal)';
+        descEl.style.color = '#ea580c';
+      } else if (value === 68) {
+        descEl.textContent = 'Referência Média Global (Aceitável)';
+        descEl.style.color = '#b45309';
+      } else if (value <= 80) {
+        descEl.textContent = 'Boa Usabilidade (Acima da Média)';
+        descEl.style.color = '#0284c7';
+      } else {
+        descEl.textContent = 'Excelente Usabilidade (Classe Mundial)';
+        descEl.style.color = '#15803d';
+      }
+    }
+
+    // 6. Timeline Explorer
+    const timelineData = [
+      {
+        year: '1986',
+        title: 'John Brooke: System Usability Scale (SUS)',
+        desc: 'Desenvolvida originalmente na Digital Equipment Corporation como uma ferramenta rápida (quick and dirty) de avaliação de sistemas operacionais e softwares. Hoje com milhares de citações, continua insuperável em eficiência e validação psicométrica de satisfação e facilidade percebida.'
+      },
+      {
+        year: '1988',
+        title: 'John Sweller: Teoria da Carga Cognitiva',
+        desc: 'Artigo pioneiro publicado na Cognitive Science demonstrando experimentalmente que estratégias pedagógicas tradicionais de resolução de problemas sobrecarregam desnecessariamente a memória de trabalho com carga estranha, prejudicando a aquisição de esquemas conceituais.'
+      },
+      {
+        year: '1994',
+        title: 'Jakob Nielsen: 10 Heurísticas de Usabilidade',
+        desc: 'Sistematização de 10 princípios gerais para avaliação heurística de interfaces homem-computador. Permite que especialistas inspecionem sistemas identificando até 75% dos problemas de usabilidade sem a necessidade imediata de montagem de laboratório empírico.'
+      },
+      {
+        year: '2001',
+        title: 'Richard Mayer: Cognitive Theory of Multimedia Learning',
+        desc: 'Publicação de Multimedia Learning pela Cambridge University Press. O modelo estabelece empiricamente como o ser humano constrói significado profundo integrando canais duplos (auditivo e visual) de capacidade limitada, formalizando princípios como proximidade, sinalização e modalidade.'
+      },
+      {
+        year: '2023',
+        title: 'W3C: Diretrizes de Acessibilidade Web (WCAG 2.2)',
+        desc: 'Atualização das recomendações globais que estendem o padrão POUR (Perceptível, Operável, Compreensível e Robusto), com foco em pessoas com deficiências cognitivas, melhorias na aparência do indicador de foco e dimensões mínimas para alvos de toque em telas móveis.'
+      }
+    ];
+
+    function selectTimeline(idx) {
+      const items = document.querySelectorAll('.timeline-item');
+      items.forEach((it, i) => {
+        if (i === idx) {
+          it.classList.add('active');
+        } else {
+          it.classList.remove('active');
+        }
+      });
+      const data = timelineData[idx];
+      document.getElementById('timeline-detail-title').textContent = `${data.year} — ${data.title}`;
+      document.getElementById('timeline-detail-desc').textContent = data.desc;
+    }
+
+    // 7. Interactive Quiz
+    const quizQuestions = [
+      {
+        q: "O que o usuário digita no buscador é sempre exatamente aquilo que ele precisa?",
+        options: [
+          "Sim, o algoritmo interpreta o texto literal e resolve a lacuna de forma unívoca.",
+          "Não — a necessidade informacional é um estado anômalo de conhecimento difícil de verbalizar; a consulta é apenas uma manifestação observável e imperfeita.",
+          "Sim, desde que o usuário conheça os operadores booleanos formais de busca.",
+          "Não, porque a Ciência da Informação comprovou que os buscadores ignoram sinônimos."
+        ],
+        correct: 1,
+        feedback: "Correto! Conforme demonstrado por autores como Belkin (ASK) e Martínez-Silveira & Oddone (2007), a necessidade de informação decorre de uma lacuna cognitiva no indivíduo que muitas vezes ele ainda não sabe como nomear adequadamente."
+      },
+      {
+        q: "Texto redundante, elementos gráficos puramente ornamentais e navegação confusa sobrecarregam a mente com que tipo de carga cognitiva?",
+        options: [
+          "Carga Intrínseca, que é própria da matéria de estudo.",
+          "Carga Relevante (Germane), que favorece a formação de esquemas conceituais.",
+          "Carga Estranha (Extraneous), que consome energia mental inútil e deve ser minimizada.",
+          "Carga Cinestésica, decorrente da interação tátil com telas."
+        ],
+        correct: 2,
+        feedback: "Exato! Segundo a Teoria de John Sweller, a carga estranha resulta exclusivamente da forma inadequada de apresentação do conteúdo e deve ser eliminada ou minimizada na interface."
+      },
+      {
+        q: "Segundo a Teoria Cognitiva da Aprendizagem Multimídia (Mayer), a construção de uma aprendizagem significativa requer:",
+        options: [
+          "Apenas memorização passiva das palavras lidas em tela.",
+          "Processamento cognitivo ativo: selecionar dados relevantes, organizá-los em representações coerentes e integrá-los aos conhecimentos prévios (Modelo SOI).",
+          "Apresentação simultânea do mesmo texto por escrito e narrado com trilha sonora acelerada.",
+          "Supressão total de esquemas gráficos para evitar qualquer distração visual."
+        ],
+        correct: 1,
+        feedback: "Correto! O processamento ativo exige canais duplos coordenados selecionando, organizando internamente e integrando novos conceitos com a bagagem prévia do sujeito."
+      },
+      {
+        q: "Qual o impacto de utilizar exclusivamente a cor (ex.: texto vermelho para erro) para comunicar uma informação crítica em um portal digital?",
+        options: [
+          "Gera eficiência de leitura por ser um padrão intuitivo universal.",
+          "Viola as diretrizes de acessibilidade (WCAG 2.2), impedindo que pessoas daltônicas ou cegas com leitor de tela identifiquem a informação.",
+          "Reduz a carga extrínseca em consonância com as 10 heurísticas de Nielsen.",
+          "Melhora a pontuação na escala SUS de usabilidade."
+        ],
+        correct: 1,
+        feedback: "Correto! A acessibilidade exige que a cor nunca seja o único recurso informativo; é indispensável associar ícones semânticos, textos explícitos ou atributos de texto alternativo."
+      }
+    ];
+
+    let currentQ = 0;
+    let score = 0;
+    let answered = false;
+
+    function renderQuestion() {
+      answered = false;
+      const qData = quizQuestions[currentQ];
+      document.getElementById('quiz-counter').textContent = `Questão ${currentQ + 1} de ${quizQuestions.length}`;
+      document.getElementById('quiz-score').textContent = `Pontuação: ${score}`;
+      document.getElementById('quiz-question-text').textContent = qData.q;
+      
+      const optBox = document.getElementById('quiz-options-box');
+      optBox.innerHTML = '';
+      
+      qData.options.forEach((opt, idx) => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'quiz-option';
+        btn.textContent = `${String.fromCharCode(65 + idx)}) ${opt}`;
+        btn.onclick = () => answerQuestion(idx, btn);
+        optBox.appendChild(btn);
+      });
+
+      const feedbackBox = document.getElementById('quiz-feedback-box');
+      feedbackBox.style.display = 'none';
+      feedbackBox.className = 'quiz-feedback';
+      document.getElementById('quiz-next-btn').style.display = 'none';
+    }
+
+    function answerQuestion(selectedIdx, btnElement) {
+      if (answered) return;
+      answered = true;
+      const qData = quizQuestions[currentQ];
+      const optBtns = document.querySelectorAll('.quiz-option');
+      optBtns.forEach(b => b.disabled = true);
+
+      const feedbackBox = document.getElementById('quiz-feedback-box');
+      feedbackBox.style.display = 'block';
+
+      if (selectedIdx === qData.correct) {
+        score++;
+        btnElement.classList.add('correct');
+        feedbackBox.classList.add('alert', 'alert-success');
+        feedbackBox.style.background = '#dcfce7';
+        feedbackBox.style.color = '#14532d';
+        feedbackBox.style.border = '1px solid #86efac';
+        feedbackBox.textContent = `✓ ${qData.feedback}`;
+      } else {
+        btnElement.classList.add('wrong');
+        optBtns[qData.correct].classList.add('correct');
+        feedbackBox.classList.add('alert', 'alert-danger');
+        feedbackBox.style.background = '#fee2e2';
+        feedbackBox.style.color = '#7f1d1d';
+        feedbackBox.style.border = '1px solid #fca5a5';
+        feedbackBox.textContent = `✕ Resposta incorreta. ${qData.feedback}`;
+      }
+
+      document.getElementById('quiz-score').textContent = `Pontuação: ${score}`;
+      document.getElementById('quiz-next-btn').style.display = 'inline-block';
+    }
+
+    function nextQuestion() {
+      currentQ++;
+      if (currentQ < quizQuestions.length) {
+        renderQuestion();
+      } else {
+        showFinalQuiz();
+      }
+    }
+
+    function showFinalQuiz() {
+      document.getElementById('quiz-question-box').style.display = 'none';
+      const finalBox = document.getElementById('quiz-final-box');
+      finalBox.style.display = 'block';
+
+      const pct = Math.round((score / quizQuestions.length) * 100);
+      let feedbackMsg = '';
+      if (pct === 100) {
+        feedbackMsg = `Excelente aproveitamento! Você acertou ${score} de ${quizQuestions.length} questões (100%). Os conceitos de DCU, carga cognitiva, aprendizagem multimídia e usabilidade foram solidamente assimilados.`;
+      } else if (pct >= 50) {
+        feedbackMsg = `Bom resultado! Você obteve ${score} de ${quizQuestions.length} acertos (${pct}%). Vale a pena revisitar as seções teóricas para consolidar as nuances entre carga estranha e heurísticas de acessibilidade.`;
+      } else {
+        feedbackMsg = `Você acertou ${score} de ${quizQuestions.length} questões (${pct}%). Recomendamos reler atentamente o infográfico e revisar os textos de Sweller e Mayer para fortalecer a base conceitual.`;
+      }
+      document.getElementById('quiz-final-msg').textContent = feedbackMsg;
+    }
+
+    function restartQuiz() {
+      currentQ = 0;
+      score = 0;
+      document.getElementById('quiz-question-box').style.display = 'block';
+      document.getElementById('quiz-final-box').style.display = 'none';
+      renderQuestion();
+    }
+
+    // 8. Copy Citation helper
+    function copyCitation() {
+      const text = document.getElementById('citation-text').innerText;
+      navigator.clipboard.writeText(text).then(() => {
+        const lbl = document.getElementById('copy-label');
+        const icon = document.getElementById('copy-icon');
+        lbl.textContent = 'Citação copiada com sucesso!';
+        icon.textContent = '✓';
+        setTimeout(() => {
+          lbl.textContent = 'Copiar citação ABNT';
+          icon.textContent = '📋';
+        }, 3000);
+      }).catch(() => {
+        alert('Não foi possível copiar automaticamente. Por favor, selecione e copie o texto manualmente.');
+      });
+    }
+
+    // DOM Ready initialization
+    document.addEventListener('DOMContentLoaded', () => {
+      renderQuestion();
+      updateGauge(68);
+    });
+  </script>
+<script>
+/* Skip artifact shell — fixed helpers served beside every artifact. */
+(function () {
+  "use strict";
+
+  var fmt = {
+    num: function (v, opts) { return new Intl.NumberFormat("pt-BR", opts || {}).format(v); },
+    brl: function (v) { return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(v); },
+    pct: function (v) { return new Intl.NumberFormat("pt-BR", { style: "percent", maximumFractionDigits: 1 }).format(v); }
+  };
+
+  // axisFmt keeps axis tick labels short (compact notation) so long values
+  // (e.g. full BRL amounts) never clip against the plot edge.
+  function axisFmt(v) {
+    return fmt.num(v, { notation: "compact", maximumFractionDigits: 1 });
+  }
+
+  // format accepts a function OR one of the fmt names ("num" | "brl" | "pct").
+  function coerceFormat(spec) {
+    if (typeof spec === "function") return spec;
+    if (typeof spec === "string" && fmt[spec]) return fmt[spec];
+    return function (v) { return fmt.num(v); };
+  }
+
+  function accent() {
+    return getComputedStyle(document.documentElement).getPropertyValue("--accent").trim() || "#2563eb";
+  }
+  function mutedColor() {
+    return getComputedStyle(document.documentElement).getPropertyValue("--text-muted").trim() || "#5b6472";
+  }
+  function svgEl(tag, attrs) {
+    var el = document.createElementNS("http://www.w3.org/2000/svg", tag);
+    for (var k in attrs) el.setAttribute(k, attrs[k]);
+    return el;
+  }
+  function frame(el, w, h) {
+    var svg = svgEl("svg", { viewBox: "0 0 " + w + " " + h, role: "img" });
+    el.innerHTML = "";
+    el.appendChild(svg);
+    return svg;
+  }
+
+  // maxOf guards the axis scale: empty values would give -Infinity (truthy,
+  // so "|| 1" can't catch it) and a non-positive max would flip the chart.
+  function maxOf(values) {
+    var m = values.length ? Math.max.apply(null, values) : 0;
+    return m > 0 ? m : 1;
+  }
+
+  // bar(el, {labels:[], values:[], color?, format?}) — vertical bar chart.
+  function bar(el, cfg) {
+    var W = 640, H = 280, padL = 46, padB = 30, padT = 12;
+    var svg = frame(el, W, H);
+    var max = maxOf(cfg.values);
+    var n = cfg.values.length;
+    var plotW = W - padL - 12, plotH = H - padT - padB;
+    var step = plotW / n, bw = Math.min(step * 0.62, 64);
+    var color = cfg.color || accent();
+    var f = coerceFormat(cfg.format);
+    for (var g = 0; g <= 4; g++) {
+      var gy = padT + plotH - (plotH * g) / 4;
+      svg.appendChild(svgEl("line", { x1: padL, y1: gy, x2: W - 12, y2: gy, stroke: "currentColor", "stroke-opacity": 0.08 }));
+      var lbl = svgEl("text", { x: padL - 8, y: gy + 4, "text-anchor": "end", "font-size": 10, fill: mutedColor() });
+      lbl.textContent = axisFmt((max * g) / 4);
+      svg.appendChild(lbl);
+    }
+    cfg.values.forEach(function (v, i) {
+      var bh = Math.max(0, (v / max) * plotH);
+      var x = padL + i * step + (step - bw) / 2;
+      var y = padT + plotH - bh;
+      var r = svgEl("rect", { x: x, y: y, width: bw, height: bh, rx: 4, fill: color });
+      var t = svgEl("title", {});
+      t.textContent = cfg.labels[i] + ": " + f(v);
+      r.appendChild(t);
+      svg.appendChild(r);
+      var tx = svgEl("text", { x: x + bw / 2, y: H - 10, "text-anchor": "middle", "font-size": 11, fill: mutedColor() });
+      tx.textContent = cfg.labels[i];
+      svg.appendChild(tx);
+    });
+  }
+
+  // line(el, {labels:[], values:[], color?, format?}) — single-series line.
+  function line(el, cfg) {
+    var W = 640, H = 280, padL = 46, padB = 30, padT = 12;
+    var svg = frame(el, W, H);
+    var max = maxOf(cfg.values);
+    var n = cfg.values.length;
+    var plotW = W - padL - 16, plotH = H - padT - padB;
+    var color = cfg.color || accent();
+    var f = coerceFormat(cfg.format);
+    for (var g = 0; g <= 4; g++) {
+      var gy = padT + plotH - (plotH * g) / 4;
+      svg.appendChild(svgEl("line", { x1: padL, y1: gy, x2: W - 16, y2: gy, stroke: "currentColor", "stroke-opacity": 0.08 }));
+      var lbl = svgEl("text", { x: padL - 8, y: gy + 4, "text-anchor": "end", "font-size": 10, fill: mutedColor() });
+      lbl.textContent = axisFmt((max * g) / 4);
+      svg.appendChild(lbl);
+    }
+    var pts = cfg.values.map(function (v, i) {
+      var x = padL + (n === 1 ? plotW / 2 : (plotW * i) / (n - 1));
+      var y = padT + plotH - (v / max) * plotH;
+      return [x, y];
+    });
+    var d = pts.map(function (p, i) { return (i ? "L" : "M") + p[0].toFixed(1) + " " + p[1].toFixed(1); }).join(" ");
+    svg.appendChild(svgEl("path", { d: d, fill: "none", stroke: color, "stroke-width": 2, "stroke-linejoin": "round" }));
+    pts.forEach(function (p, i) {
+      var c = svgEl("circle", { cx: p[0], cy: p[1], r: 3.5, fill: color });
+      var t = svgEl("title", {});
+      t.textContent = cfg.labels[i] + ": " + f(cfg.values[i]);
+      c.appendChild(t);
+      svg.appendChild(c);
+      var tx = svgEl("text", { x: p[0], y: H - 10, "text-anchor": "middle", "font-size": 11, fill: mutedColor() });
+      tx.textContent = cfg.labels[i];
+      svg.appendChild(tx);
+    });
+  }
+
+  // donut(el, {labels:[], values:[], colors?}) — donut with center total.
+  function donut(el, cfg) {
+    var W = 320, H = 280, cx = W / 2, cy = H / 2, R = 92, r = 58;
+    var svg = frame(el, W, H);
+    var total = cfg.values.reduce(function (a, b) { return a + b; }, 0) || 1;
+    var palette = cfg.colors || [accent(), "#1baf7a", "#eda100", "#e34948", "#4a3aa7", "#e87ba4"];
+    var a0 = -Math.PI / 2;
+    cfg.values.forEach(function (v, i) {
+      var a1 = a0 + (v / total) * Math.PI * 2;
+      var large = a1 - a0 > Math.PI ? 1 : 0;
+      var p = ["M", cx + R * Math.cos(a0), cy + R * Math.sin(a0),
+        "A", R, R, 0, large, 1, cx + R * Math.cos(a1), cy + R * Math.sin(a1),
+        "L", cx + r * Math.cos(a1), cy + r * Math.sin(a1),
+        "A", r, r, 0, large, 0, cx + r * Math.cos(a0), cy + r * Math.sin(a0), "Z"].join(" ");
+      var path = svgEl("path", { d: p, fill: palette[i % palette.length] });
+      var t = svgEl("title", {});
+      t.textContent = cfg.labels[i] + ": " + fmt.num(v) + " (" + fmt.pct(v / total) + ")";
+      path.appendChild(t);
+      svg.appendChild(path);
+      a0 = a1;
+    });
+    var center = svgEl("text", { x: cx, y: cy + 5, "text-anchor": "middle", "font-size": 20, "font-weight": 650, fill: "currentColor" });
+    center.textContent = fmt.num(total);
+    svg.appendChild(center);
+  }
+
+  window.skipShell = { fmt: fmt };
+  window.skipChart = { bar: bar, line: line, donut: donut };
+})();
+
+</script>
+</body>
+</html>
